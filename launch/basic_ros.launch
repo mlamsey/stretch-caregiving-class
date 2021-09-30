@@ -1,0 +1,4 @@
+<launch>
+  <node name="basic_node" pkg="stretch-caregiving-class" type="basic_ros_node.py" output="screen"/>
+  <node name="basic_node_class" pkg="stretch-caregiving-class" type="basic_ros_node_class.py" output="screen"/>
+</launch>
