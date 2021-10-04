@@ -28,7 +28,7 @@ if __name__ == '__main__':
 ```
 
 ### Moving the Robot: Joint Commands
-Basic motion of the joints of the Stretch can be achieved using the method `self.move_to_pose({"joint_name" : value})`. The dictionary of joint names and target positions can contain multiple joint names, and will move to all of the target values in the dictionary at the same time. The list of possible `joint_name` values is given below. `value` is in SI units: meters for joint motion and base translation, and degrees for revolute joints and base rotation.
+Basic motion of the joints of the Stretch can be achieved using the method `self.move_to_pose({"joint_name" : value})`. The dictionary of joint names and target positions can contain multiple joint names, and will move to all of the target values in the dictionary at the same time. The list of possible `joint_name` values is given below. `value` is in SI units: meters for joint motion and base translation, and radians for revolute joints and base rotation.
 
 __Head Joints__:
 * `joint_head_pan`
