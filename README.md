@@ -28,7 +28,7 @@ if __name__ == '__main__':
 ```
 
 ### Moving the Robot: Joint Commands
-Basic motion of the joints of the Stretch can be achieved using the method `move_to_pose({"joint_name" : value})`. The list of possible `joint_name` values is given below. `value` is in SI units: meters for joint motion and base translation, and degrees for revolute joints and base rotation.
+Basic motion of the joints of the Stretch can be achieved using the method `self.move_to_pose({"joint_name" : value})`. The dictionary of joint names and target positions can contain multiple joint names, and will move to all of the target values in the dictionary at the same time. The list of possible `joint_name` values is given below. `value` is in SI units: meters for joint motion and base translation, and degrees for revolute joints and base rotation.
 
 __Head Joints__:
 * `joint_head_pan`
@@ -45,3 +45,17 @@ __Wrist (non-dexterous)__:
 __Mobile Base__:
 * `translate_mobile_base` (forward and backward, no splines)
 * `rotate_mobile_base` (rotate about center of drive wheelbase)
+
+An example of commanding joint motion is given below.
+
+```
+def move_gripper_in_a_rectangle(self):
+    # Define target positions
+    arm_extensions = [0.2, 0.4, 0.4, 0.2, 0.2]
+    lift_heights = [0.4, 0.4, 0.6, 0.6, 0.4]
+    
+    # Execute motions
+    for i in range(len(arm_extensions)):
+        target_pose = {"joint_lift": lift_heights[i], "wrist_extension": arm_extensions[i]}
+        self.move_to_pose(target_pose)
+```
