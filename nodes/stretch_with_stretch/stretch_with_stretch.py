@@ -14,7 +14,7 @@ class stretch_testing(hm.HelloNode):
         hm.HelloNode.__init__(self)
 
     def main(self):
-        hm.HelloNode.main(self, 'stretch_test_node', 'node_namespace', wait_for_first_pointcloud=False)
+        hm.HelloNode.main(self, 'stretch_with_stretch_node', 'node_namespace', wait_for_first_pointcloud=False)
         self.move_to_pose({"joint_lift": 0.6})
         rospy.sleep(1)
         self.move_to_pose({"joint_lift": 0.4})
@@ -22,6 +22,6 @@ class stretch_testing(hm.HelloNode):
         rospy.loginfo("Test Complete!")
 
 if __name__ == '__main__':
-    print("stretch_testing::__init__()")
+    rospy.loginfo("stretch_with_stretch::__init__()")
     node = stretch_testing()
     node.main()
