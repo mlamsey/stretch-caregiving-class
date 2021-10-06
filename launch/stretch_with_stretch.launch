@@ -26,6 +26,7 @@
   <!-- -->
 
   <!-- MAIN -->
+  <node name="stretch_imu_monitor" pkg="stretch-caregiving-class" type="stretch_imu_monitor.py" output="screen"/>
   <node name="stretch_with_stretch" pkg="stretch-caregiving-class" type="stretch_with_stretch.py" output="screen"/>
   <!-- -->
 

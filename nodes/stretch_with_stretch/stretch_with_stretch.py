@@ -17,7 +17,8 @@ class stretch_with_stretch(hm.HelloNode):
     def __init__(self):
         hm.HelloNode.__init__(self)
 
-        self.rate = 10
+        # Rate for rospy.Rate() called in main
+        self.rate = 1
 
         # Subscribers
         self.joint_states_subscriber = rospy.Subscriber('/stretch/joint_states', JointState, self.joint_state_callback)
