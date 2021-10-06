@@ -27,7 +27,6 @@ class StretchSound:
             msg = "hi everyone"
             rospy.loginfo("say {}".format(msg))
             self.handle.say(msg)
-            self.handle.play()
 
             rate.sleep()
 
