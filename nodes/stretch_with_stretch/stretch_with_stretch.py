@@ -50,7 +50,8 @@ class stretch_with_stretch(hm.HelloNode):
         
         while not rospy.is_shutdown():
             if self.wrist_position is not None:
-                rospy.loginfo("Current wrist extension: %f" % self.wrist_position)
+                # rospy.loginfo("Current wrist extension: %f" % self.wrist_position)
+                pass
 
             rate.sleep()
 

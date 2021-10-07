@@ -12,7 +12,7 @@ class stretch_imu_monitor:
     def __init__(self):
         rospy.init_node('stretch_imu_monitor', anonymous=True)
         # Misc
-        self.rate = 1
+        self.rate = 10
 
         # Subscribers
         self.imu_subscriber = rospy.Subscriber('/imu_wrist', Imu, self.imu_callback)
