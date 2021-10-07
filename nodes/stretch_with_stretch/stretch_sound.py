@@ -4,6 +4,9 @@ from __future__ import print_function, division
 # ROS
 import rospy
 
+# Messages
+from std_msgs.msg import Bool
+
 # Sound Play
 from sound_play.libsoundplay import SoundClient
 
@@ -16,10 +19,18 @@ class StretchSound:
     def __init__(self):
         rospy.init_node("stretch_sound", anonymous=True)
 
+        self.wrist_contact_subscriber = rospy.Subscriber('/wrist_contact_detected', Bool, self.wrist_contact_callback, queue_size=1)
+
         self.base_sound_path = "/home/hello-robot/catkin_ws/src/stretch-caregiving-class/sounds/"
 
         self.rate = 1 / 5  # play sound every 5 seconds
+        self.rate = 20
         self.handle = SoundClient()
+
+    def wrist_contact_callback(self, data):
+        rospy.loginfo(data.data)
+        if data.data:
+            self.point_scored()
 
     def main(self):
         rate = rospy.Rate(self.rate)
@@ -28,7 +39,7 @@ class StretchSound:
         self.start_exercise()
 
         while not rospy.is_shutdown():
-            self.point_scored()
+            # self.point_scored()
             # play sound
             # msg = "hi everyone"
             # rospy.loginfo("say {}".format(msg))
@@ -44,8 +55,8 @@ class StretchSound:
     def point_scored(self):
         rospy.loginfo("Point Scored!")
         point_scored = self.base_sound_path + "point_scored.wav"
-        self.handle.playWave(point_scored,blocking=True)
-        rospy.sleep(0.5)
+        self.handle.playWave(point_scored,blocking=False)
+        # rospy.sleep(0.1)
 
 if __name__ == "__main__":
     node = StretchSound()

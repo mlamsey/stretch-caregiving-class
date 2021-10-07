@@ -25,8 +25,15 @@
   <include file="$(find stretch_core)/launch/stretch_aruco.launch"></include>
   <!-- -->
 
+  <!-- SOUND PLAY -->
+  <!-- http://wiki.ros.org/sound_play -->
+  <!-- command-line demo: rosrun sound_play say.py "hi" -->
+  <node name="soundplay_node" pkg="sound_play" type="soundplay_node.py"/>
+  <!--  -->
+
   <!-- MAIN -->
-  <node name="stretch_imu_monitor" pkg="stretch-caregiving-class" type="stretch_imu_monitor.py" output="screen"/>
+  <!-- <node name="stretch_imu_monitor" pkg="stretch-caregiving-class" type="stretch_imu_monitor.py" output="screen"/> -->
+  <node name="stretch_sound" pkg="stretch-caregiving-class" type="stretch_sound.py" output="screen"/>
   <node name="stretch_with_stretch" pkg="stretch-caregiving-class" type="stretch_with_stretch.py" output="screen"/>
   <!-- -->
 
