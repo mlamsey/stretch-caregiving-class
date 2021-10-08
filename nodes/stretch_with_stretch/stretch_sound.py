@@ -1,5 +1,6 @@
 #!/usr/bin/env python2
 from __future__ import print_function, division
+import os
 
 # ROS
 import rospy
@@ -9,7 +10,6 @@ from std_msgs.msg import Bool
 
 # Sound Play
 from sound_play.libsoundplay import SoundClient
-
 
 class StretchSound:
     """Example code:
@@ -22,7 +22,7 @@ class StretchSound:
         self.point_scored_subscriber = rospy.Subscriber('/game_state/point_scored', Bool, self.point_scored, queue_size=1)
         self.start_game_subscriber = rospy.Subscriber('/game_state/start_game', Bool, self.start_exercise, queue_size=1)
 
-        self.base_sound_path = "/home/hello-robot/catkin_ws/src/stretch-caregiving-class/sounds/"
+        self.base_sound_path = os.path.expanduser('~') + "/catkin_ws/src/stretch-caregiving-class/sounds/"
 
         self.rate = 1 / 5  # play sound every 5 seconds
         self.rate = 20

@@ -29,7 +29,7 @@ class reach_point_game_manager:
         rospy.loginfo("Point Scored!")
         self.game_score += 1
         self.point_scored_publisher.publish(True)
-        rospy.sleep(0.25)
+        rospy.sleep(0.5)
 
     def main(self):
         rate = rospy.Rate(self.rate)

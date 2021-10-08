@@ -37,7 +37,7 @@ class stretch_with_stretch(hm.HelloNode):
         self.joint_states_lock = threading.Lock()
 
         # Internal variables
-        self.wrist_yaw_effort_contact_threshold = 0.3 # N
+        self.wrist_yaw_effort_contact_threshold = 0.35 # N
 
     def joint_state_callback(self, joint_states):
         # Update Joint State
@@ -66,6 +66,11 @@ class stretch_with_stretch(hm.HelloNode):
     def main(self):
         hm.HelloNode.main(self, 'stretch_with_stretch_node', 'node_namespace', wait_for_first_pointcloud=False)
         rate = rospy.Rate(self.rate)
+
+        while self.joint_states is None:
+            pass
+
+        self.move_to_pose({"joint_lift": self.lift_position, "wrist_extension": self.wrist_position})
 
         while not rospy.is_shutdown():
             if self.wrist_yaw_effort is not None:
