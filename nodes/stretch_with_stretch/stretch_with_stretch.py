@@ -30,9 +30,12 @@ class stretch_with_stretch(hm.HelloNode):
 
         # Joint State Inits
         self.joint_states = None
+
         self.lift_position = None
         self.lift_effort = None
+
         self.arm_effort = None
+
         self.wrist_position = None
         self.wrist_yaw_effort = None
 
@@ -41,6 +44,10 @@ class stretch_with_stretch(hm.HelloNode):
 
         # Internal variables
         self.wrist_yaw_effort_contact_threshold = 0.35 # N
+        self.lift_contact_upper_threshold = 52 # N?
+        self.lift_contact_lower_threshold = 36 # N?
+        self.arm_contact_upper_threshold = 10 # N?
+        self.arm_contact_lower_threshold = -10 # N?
 
         # Exercise Configuration
         self.calibration_lift_height = 0.75 # m
@@ -68,10 +75,18 @@ class stretch_with_stretch(hm.HelloNode):
         if self.wrist_yaw_effort is not None:
             # rospy.loginfo("Current Wrist Yaw Effort: %f" % self.wrist_yaw_effort)
 
+            bool_wrist_contact = False
+
             if abs(self.wrist_yaw_effort) > self.wrist_yaw_effort_contact_threshold:
-                self.wrist_contact_publisher.publish(True)
-            else:
-                self.wrist_contact_publisher.publish(False)
+                bool_wrist_contact = True
+
+            if self.lift_effort < self.lift_contact_lower_threshold or self.lift_effort > self.lift_contact_upper_threshold:
+                bool_wrist_contact = True
+
+            if self.arm_effort < self.arm_contact_lower_threshold or self.arm_effort > self.arm_contact_upper_threshold:
+                bool_wrist_contact = True
+
+            self.wrist_contact_publisher.publish(bool_wrist_contact)
 
     def wait_for_calibration_handshake(self):
         rate = rospy.Rate(self.rate)
@@ -110,7 +125,6 @@ class stretch_with_stretch(hm.HelloNode):
         while not rospy.is_shutdown():
             if self.wrist_yaw_effort is not None:
                 self.check_for_wrist_contact()
-                rospy.loginfo("Lift Effort: %f" % self.lift_effort)
 
             rate.sleep()
 
