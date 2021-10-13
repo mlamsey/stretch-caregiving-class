@@ -30,6 +30,8 @@ class stretch_with_stretch(hm.HelloNode):
         # Joint State Inits
         self.joint_states = None
         self.lift_position = None
+        self.lift_effort = None
+        self.arm_effort = None
         self.wrist_position = None
         self.wrist_yaw_effort = None
 
@@ -49,6 +51,8 @@ class stretch_with_stretch(hm.HelloNode):
         wrist_position, wrist_velocity, wrist_effort = hm.get_wrist_state(joint_states)
 
         self.wrist_yaw_effort = joint_states.effort[joint_states.name.index('joint_wrist_yaw')]
+        self.lift_effort = joint_states.effort[joint_states.name.index('joint_lift')]
+        self.arm_effort = joint_states.effort[joint_states.name.index('wrist_extension')]
 
         # Store necessary items
         self.lift_position = lift_position
@@ -70,6 +74,7 @@ class stretch_with_stretch(hm.HelloNode):
         while not rospy.is_shutdown():
             if self.wrist_yaw_effort is not None:
                 self.check_for_wrist_contact()
+                rospy.loginfo("Lift Effort: %f" % self.lift_effort)
 
             rate.sleep()
 
