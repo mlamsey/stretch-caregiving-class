@@ -2,6 +2,7 @@
 # Generic Imports
 from __future__ import print_function
 import threading
+import numpy as np
 
 # ROS Stuff
 import rospy
@@ -41,6 +42,11 @@ class stretch_with_stretch(hm.HelloNode):
         # Internal variables
         self.wrist_yaw_effort_contact_threshold = 0.35 # N
 
+        # Exercise Configuration
+        self.calibration_lift_height = 0.75 # m
+        self.calibration_arm_extension = 0 # m
+        self.exercise_radius = 0.635 # m (average human arm length)
+
     def joint_state_callback(self, joint_states):
         # Update Joint State
         with self.joint_states_lock:
@@ -66,6 +72,31 @@ class stretch_with_stretch(hm.HelloNode):
                 self.wrist_contact_publisher.publish(True)
             else:
                 self.wrist_contact_publisher.publish(False)
+
+    def wait_for_calibration_handshake(self):
+        rate = rospy.Rate(self.rate)
+
+        calibration_pose = {"joint_lift": self.calibration_lift_height, "wrist_extension": self.calibration_arm_extension}
+        self.move_to_pose(calibration_pose)
+        while not rospy.is_shutdown():
+            if self.wrist_yaw_effort is not None:
+                self.check_for_wrist_contact()
+
+            rate.sleep()
+
+        rospy.loginfo("Calibration Handshake Completed.")
+
+    def exercise_forward_kinematics(self, theta_degrees):
+        # returns the x (base travel) and y (arm extension) given target reach angle theta
+
+        # Shorthand
+        r = self.exercise_radius
+        t = np.radians(theta_degrees)
+
+        # FK
+        x = r * np.sin(t)
+        y = r * (1 - np.cos(t))
+        return x, y
 
     def main(self):
         hm.HelloNode.main(self, 'stretch_with_stretch_node', 'node_namespace', wait_for_first_pointcloud=False)
