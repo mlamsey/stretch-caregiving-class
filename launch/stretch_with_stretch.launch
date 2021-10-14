@@ -36,6 +36,7 @@
   <node name="stretch_sound" pkg="stretch-caregiving-class" type="stretch_sound.py" output="screen"/>
   <node name="stretch_with_stretch" pkg="stretch-caregiving-class" type="stretch_with_stretch.py" output="screen"/>
   <node name="reach_point_game_manager" pkg="stretch-caregiving-class" type="reach_point_game_manager.py" output="screen"/>
+  <node name="game_launcher" pkg="stretch-caregiving-class" type="game_starter_node.py" output="screen"/>
   <!-- -->
 
   <!-- RVIZ -->
