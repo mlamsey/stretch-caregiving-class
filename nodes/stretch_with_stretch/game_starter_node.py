@@ -4,6 +4,11 @@ from __future__ import print_function
 # ROS
 import rospy
 
+
+# print_menu import
+import menudraft
+
+
 # Messages
 from std_msgs.msg import Bool
 
@@ -24,14 +29,20 @@ class GameStarterNode:
         self.robot_calibrated = True
 
     def main(self):
-        # wait for handshake
-        while not self.robot_calibrated:
-            pass
+        #Wait for text input start
+        gameChoice = menudraft.get_user_input()
+        if gameChoice == 1:
 
-        # launch
-        rospy.loginfo("AUTOMATICALLY LAUNCHING GAME")
-        self.start_game_publisher.publish(True)
-        rospy.spin()
+            # wait for handshake
+            while not self.robot_calibrated:
+                pass
+
+            # launch
+            rospy.loginfo("AUTOMATICALLY LAUNCHING GAME")
+            self.start_game_publisher.publish(True)
+            rospy.spin()
+        else:
+            gameChoice = menudraft.get_user_input()
 
 if __name__ == '__main__':
     node = GameStarterNode()
