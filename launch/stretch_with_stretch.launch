@@ -36,11 +36,6 @@
   <node name="stretch_sound" pkg="stretch-caregiving-class" type="stretch_sound.py" output="screen"/>
   <node name="stretch_with_stretch" pkg="stretch-caregiving-class" type="stretch_with_stretch.py" output="screen"/>
   <node name="game_manager" pkg="stretch-caregiving-class" type="game_manager.py" output="screen"/>
-  <node name="game_launcher" pkg="stretch-caregiving-class" type="game_launcher.py" output="screen"/>
-  <!-- -->
-
-  <!-- RVIZ -->
-  <!-- <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find stretch_core)/rviz/stretch_simple_test.rviz"/> -->
   <!-- -->
 
 </launch>

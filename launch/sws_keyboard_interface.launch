@@ -1,0 +1,3 @@
+<launch>
+  <node name="game_launcher" pkg="stretch-caregiving-class" type="game_launcher.py" output="screen"/>
+</launch>

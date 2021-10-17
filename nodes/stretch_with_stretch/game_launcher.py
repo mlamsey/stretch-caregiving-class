@@ -20,22 +20,7 @@ class GameLauncher:
             "/game_state/start_game", Bool, queue_size=1
         )
 
-        # Subscribers
-        self.robot_calibrated_subscriber = rospy.Subscriber(
-            "/game_state/robot_calibrated", Bool, self.robot_calibrated_callback
-        )
-
-        # State
-        self.robot_calibrated = False
-
-    def robot_calibrated_callback(self, data):
-        self.robot_calibrated = True
-
     def main(self):
-        while not rospy.is_shutdown():
-            if self.robot_calibrated:
-                break
-
         while not rospy.is_shutdown():
             gameChoice = menu_select.get_user_input()
             if gameChoice == 1:
