@@ -1,15 +1,17 @@
 #!/usr/bin/env python2
-from __future__ import print_function, division
+from __future__ import division, print_function
+
 import os
 
 # ROS
 import rospy
 
+# Sound Play
+from sound_play.libsoundplay import SoundClient
+
 # Messages
 from std_msgs.msg import Bool
 
-# Sound Play
-from sound_play.libsoundplay import SoundClient
 
 class StretchSound:
     """Example code:
@@ -19,10 +21,16 @@ class StretchSound:
     def __init__(self):
         rospy.init_node("stretch_sound", anonymous=True)
 
-        self.point_scored_subscriber = rospy.Subscriber('/game_state/point_scored', Bool, self.point_scored, queue_size=1)
-        self.start_game_subscriber = rospy.Subscriber('/game_state/start_game', Bool, self.start_exercise, queue_size=1)
+        self.point_scored_subscriber = rospy.Subscriber(
+            "/game_state/point_scored", Bool, self.point_scored, queue_size=1
+        )
+        self.start_game_subscriber = rospy.Subscriber(
+            "/game_state/start_game", Bool, self.start_exercise, queue_size=1
+        )
 
-        self.base_sound_path = os.path.expanduser('~') + "/catkin_ws/src/stretch-caregiving-class/sounds/"
+        self.base_sound_path = (
+            os.path.expanduser("~") + "/catkin_ws/src/stretch-caregiving-class/sounds/"
+        )
 
         self.rate = 1 / 5  # play sound every 5 seconds
         self.rate = 20
@@ -47,12 +55,13 @@ class StretchSound:
     def start_exercise(self, data):
         if data.data:
             start_exercise = self.base_sound_path + "3-2-1-go_75bpm.wav"
-            self.handle.playWave(start_exercise,blocking=True)
+            self.handle.playWave(start_exercise, blocking=True)
 
     def point_scored(self, data):
         if data.data:
             point_scored = self.base_sound_path + "point_scored.wav"
-            self.handle.playWave(point_scored,blocking=False)
+            self.handle.playWave(point_scored, blocking=False)
+
 
 if __name__ == "__main__":
     node = StretchSound()

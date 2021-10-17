@@ -3,19 +3,20 @@ from __future__ import print_function
 
 # ROS
 import rospy
+from geometry_msgs.msg import Vector3
 
 # Messages
 from sensor_msgs.msg import Imu
-from geometry_msgs.msg import Vector3
+
 
 class stretch_imu_monitor:
     def __init__(self):
-        rospy.init_node('stretch_imu_monitor', anonymous=True)
+        rospy.init_node("stretch_imu_monitor", anonymous=True)
         # Misc
         self.rate = 10
 
         # Subscribers
-        self.imu_subscriber = rospy.Subscriber('/imu_wrist', Imu, self.imu_callback)
+        self.imu_subscriber = rospy.Subscriber("/imu_wrist", Imu, self.imu_callback)
 
         # Data Storage
         self.imu_x = None
@@ -37,6 +38,7 @@ class stretch_imu_monitor:
 
             rate.sleep()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     node = stretch_imu_monitor()
     node.main()

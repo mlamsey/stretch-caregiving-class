@@ -5,24 +5,30 @@ from __future__ import print_function
 # ROS
 import rospy
 
+# import filewritetest
+from game_logger import GameLogger, LogState
+
 # Messages
 from std_msgs.msg import Bool
-
-#import filewritetest
-from game_logger import GameLogger, LogState
 
 
 class reach_point_game_manager:
     def __init__(self):
-        rospy.init_node('reach_point_game_manager', anonymous=True)
+        rospy.init_node("reach_point_game_manager", anonymous=True)
         self.rate = 10
 
         # Subscribers
-        self.wrist_contact_subscriber = rospy.Subscriber('/wrist_contact_detected', Bool, self.wrist_contact_callback)
-        self.start_game_subscriber = rospy.Subscriber('/game_state/start_game', Bool, self.start_game_callback)
+        self.wrist_contact_subscriber = rospy.Subscriber(
+            "/wrist_contact_detected", Bool, self.wrist_contact_callback
+        )
+        self.start_game_subscriber = rospy.Subscriber(
+            "/game_state/start_game", Bool, self.start_game_callback
+        )
 
         # Publishers
-        self.point_scored_publisher = rospy.Publisher('/game_state/point_scored', Bool, queue_size=1)
+        self.point_scored_publisher = rospy.Publisher(
+            "/game_state/point_scored", Bool, queue_size=1
+        )
 
         # State
         self.wrist_contact = False
@@ -48,19 +54,18 @@ class reach_point_game_manager:
         self.logger.add_line(self.current_exercise, LogState.CONTACT_DETECTED)
         rospy.sleep(0.75)
 
-
     def play_game(self):
         rate = rospy.Rate(self.rate)
 
         # Game configuration
-        game_time = 15 # sec
+        game_time = 15  # sec
         game_end_time = rospy.Time.now().secs + game_time
 
         # Game state
         score_changed = False
 
         # Run game
-        rospy.sleep(1.5) # wait for startup sound
+        rospy.sleep(1.5)  # wait for startup sound
         while not rospy.is_shutdown() and rospy.Time.now().secs < game_end_time:
             if self.wrist_contact:
                 self.point_scored_action()
@@ -74,12 +79,11 @@ class reach_point_game_manager:
 
         rospy.loginfo("Game Complete!")
         rospy.loginfo("Final Score: %i" % self.game_score)
-        #filewritetest.addline("Game Complete!")
+        # filewritetest.addline("Game Complete!")
         # TODO: game over sound
 
         # Reset game
         self.game_score = 0
-
 
     def main(self):
         rate = rospy.Rate(self.rate)
@@ -91,6 +95,7 @@ class reach_point_game_manager:
 
             rate.sleep()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     node = reach_point_game_manager()
     node.main()
