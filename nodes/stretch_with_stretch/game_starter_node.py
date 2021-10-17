@@ -5,9 +5,8 @@ from __future__ import print_function
 import rospy
 
 
-
-#print_menu import
-import menudraft
+# import exercise menu selection
+import menu_select
 
 
 # Messages
@@ -22,7 +21,7 @@ class GameStarterNode:
 
         # Subscribers
         self.robot_calibrated_subscriber = rospy.Subscriber('/game_state/robot_calibrated', Bool, self.robot_calibrated_callback)
-           
+
         # State
         self.robot_calibrated = False
 
@@ -30,25 +29,21 @@ class GameStarterNode:
         self.robot_calibrated = True
 
     def main(self):
-        #Wait for text input start
-        
+        # wait for handshake
+        while not self.robot_calibrated:
+            pass
 
-            # wait for handshake
-            while not self.robot_calibrated:
-                pass
-
-            # launch
-            if self.robot_calibrated:
-                gameChoice = menudraft.get_user_input()
-                if gameChoice == 1:
-                    rospy.loginfo("Game 1 Chosen")
-                    rospy.loginfo("AUTOMATICALLY LAUNCHING GAME")
-                    self.start_game_publisher.publish(True)
-                    rospy.spin()
-                else:
-                    gameChoice = menudraft.get_user_input()
-            
-       
+        # launch menu select
+        if self.robot_calibrated:
+            gameChoice = menu_select.get_user_input()
+            if gameChoice == 1:
+                rospy.loginfo("Exercise A is ready to begin.")
+                #launch game
+                rospy.loginfo("AUTOMATICALLY LAUNCHING GAME")
+                self.start_game_publisher.publish(True)
+                rospy.spin()
+            else:
+                gameChoice = menu_select.get_user_input()
 
 if __name__ == '__main__':
     node = GameStarterNode()

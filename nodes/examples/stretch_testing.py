@@ -14,11 +14,13 @@ class stretch_testing(hm.HelloNode):
 
     def main(self):
         hm.HelloNode.main(self, 'stretch_test_node', 'node_namespace', wait_for_first_pointcloud=False)
-        self.move_to_pose({"joint_lift": 0.6})
-        rospy.sleep(1)
-        self.move_to_pose({"joint_lift": 0.4})
-        rospy.sleep(1)
-        rospy.loginfo("Test Complete!")
+        self.move_to_pose({"joint_lift": 0.6, "wrist_extension": 0.1})
+        # self.move_to_pose({"joint_lift": 0.6})
+        # rospy.sleep(1)
+        # self.move_to_pose({"joint_lift": 0.4})
+        # rospy.sleep(1)
+        # rospy.loginfo("Test Complete!")
+        rospy.spin()
 
 if __name__ == '__main__':
     print("stretch_testing::__init__()")

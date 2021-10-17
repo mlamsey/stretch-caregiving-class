@@ -1,13 +1,16 @@
 #!/usr/bin/env python2
 # Generic Imports
 from __future__ import print_function
-import ros
 
 # ROS
 import rospy
 
 # Messages
 from std_msgs.msg import Bool
+
+#import filewritetest
+from game_logger import GameLogger, LogState
+
 
 class reach_point_game_manager:
     def __init__(self):
@@ -26,6 +29,12 @@ class reach_point_game_manager:
         self.start_game = False
         self.game_score = 0
 
+        # Logger
+        self.logger = GameLogger()
+
+        # TODO: change
+        self.current_exercise = "A"
+
     def wrist_contact_callback(self, data):
         self.wrist_contact = data.data
 
@@ -36,13 +45,15 @@ class reach_point_game_manager:
         rospy.loginfo("Point Scored!")
         self.game_score += 1
         self.point_scored_publisher.publish(True)
+        self.logger.add_line(self.current_exercise, LogState.CONTACT_DETECTED)
         rospy.sleep(0.75)
+
 
     def play_game(self):
         rate = rospy.Rate(self.rate)
 
         # Game configuration
-        game_time = 30 # sec
+        game_time = 15 # sec
         game_end_time = rospy.Time.now().secs + game_time
 
         # Game state
@@ -63,6 +74,7 @@ class reach_point_game_manager:
 
         rospy.loginfo("Game Complete!")
         rospy.loginfo("Final Score: %i" % self.game_score)
+        #filewritetest.addline("Game Complete!")
         # TODO: game over sound
 
         # Reset game
