@@ -5,24 +5,21 @@ import os
 
 import rospy
 from sound_play.libsoundplay import SoundClient
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, String
 
 
 class StretchSound:
     def __init__(self):
         rospy.init_node("stretch_sound", anonymous=True)
 
+        self.sws_notify_subscriber = rospy.Subscriber(
+            "/sws_notify", Bool, self.notify, queue_size=1
+        )
+        self.start_exercise_subscriber = rospy.Subscriber(
+            "/sws_start_exercise", String, self.start_exercise, queue_size=1
+        )
         self.point_scored_subscriber = rospy.Subscriber(
-            "/game_state/point_scored", Bool, self.point_scored, queue_size=1
-        )
-        self.robot_initialized_subscriber = rospy.Subscriber(
-            "/game_state/robot_initialized", Bool, self.welcome, queue_size=1
-        )
-        self.start_game_subscriber = rospy.Subscriber(
-            "/game_state/start_game", Bool, self.start_exercise, queue_size=1
-        )
-        self.robot_initialized_subscriber = rospy.Subscriber(
-            "/game_state/robot_done", Bool, self.goodbye, queue_size=1
+            "/sws_point_scored", Bool, self.point_scored, queue_size=1
         )
 
         self.base_sound_path = os.path.join(
@@ -35,28 +32,20 @@ class StretchSound:
 
         self.handle = SoundClient()
 
-    def main(self):
-        rospy.spin()
-
-    def welcome(self, data):
-        if data.data:
-            path = os.path.join(self.base_sound_path, "welcome.wav")
-            self.handle.playWave(path, blocking=True)
+    def notify(self, data):
+        path = os.path.join(self.base_sound_path, "notify.wav")
+        self.handle.playWave(path, blocking=True)
 
     def start_exercise(self, data):
-        if data.data:
-            path = os.path.join(self.base_sound_path, "3-2-1-go_75bpm.wav")
-            self.handle.playWave(path, blocking=True)
+        path = os.path.join(self.base_sound_path, "3-2-1-go_75bpm.wav")
+        self.handle.playWave(path, blocking=True)
 
     def point_scored(self, data):
-        if data.data:
-            path = os.path.join(self.base_sound_path, "point_scored.wav")
-            self.handle.playWave(path, blocking=False)
+        path = os.path.join(self.base_sound_path, "point_scored.wav")
+        self.handle.playWave(path, blocking=False)
 
-    def goodbye(self, data):
-        if data.data:
-            path = os.path.join(self.base_sound_path, "goodbye.wav")
-            self.handle.playWave(path, blocking=True)
+    def main(self):
+        rospy.spin()
 
 
 if __name__ == "__main__":

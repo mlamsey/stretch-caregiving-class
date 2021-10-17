@@ -19,35 +19,30 @@ def menu_selection(ex_select):
         rospy.loginfo("Input too long!")
         return None
 
-    # select exercise
-    if ex_select == "A":
-        rospy.loginfo("Exercise A Selected")
-        return 1
-    elif ex_select == "B":
-        rospy.loginfo("Exercise B Selected")
-        return 2
-    elif ex_select == "C":
-        rospy.loginfo("Exercise C Selected")
-        return 3
-    else:
-        rospy.loginfo("Invalid exercise, please try again.")
+    # if ex_select not in ["A", "B", "C"]:
+    if ex_select not in ["A"]:
+        rospy.loginfo("Exercise {} is not yet implemented".format(ex_select))
         return None
+
+    rospy.loginfo("Exercise {} selected".format(ex_select))
+    return ex_select
 
 
 def get_user_input():
     input_confirmed = False
     while not input_confirmed:
-        # print("Test")
         print_menu()
-        user_input = raw_input("Please enter a selection.      ")
+        msg = "Please enter a selection.      "
+        user_input = raw_input(msg)
         user_input = user_input.replace(" ", "")
-        decision = raw_input(
-            "You have selected %s. Is this correct? Press y/Y to proceed.      "
-            % user_input
-        )
+
+        msg = "You have selected {}\n".format(user_input)
+        msg += "Is this correct? Press y/Y to proceed.      "
+        decision = raw_input(msg)
         if decision.upper() == "Y":
             gameChoice = menu_selection(user_input)
             if gameChoice is not None:
                 input_confirmed = True
+
     return gameChoice
 
