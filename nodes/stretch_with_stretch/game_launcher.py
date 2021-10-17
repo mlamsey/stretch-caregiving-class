@@ -11,7 +11,7 @@ import rospy
 from std_msgs.msg import Bool
 
 
-class GameStarterNode:
+class GameLauncher:
     def __init__(self):
         rospy.init_node("game_starter_node", anonymous=True)
 
@@ -50,5 +50,5 @@ class GameStarterNode:
 
 
 if __name__ == "__main__":
-    node = GameStarterNode()
+    node = GameLauncher()
     node.main()

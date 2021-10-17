@@ -12,7 +12,7 @@ from game_logger import GameLogger, LogState
 from std_msgs.msg import Bool
 
 
-class reach_point_game_manager:
+class GameManager:
     def __init__(self):
         rospy.init_node("reach_point_game_manager", anonymous=True)
         self.rate = 10
@@ -97,5 +97,5 @@ class reach_point_game_manager:
 
 
 if __name__ == "__main__":
-    node = reach_point_game_manager()
+    node = GameManager()
     node.main()
