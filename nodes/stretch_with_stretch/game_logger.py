@@ -3,6 +3,13 @@ from datetime import datetime
 from enum import Enum
 
 
+class LogState(Enum):
+
+    EXERCISE_STARTED = 0
+    CONTACT_DETECTED = 1
+    EXERCISE_ENDED = 2
+
+
 class GameLogger:
     def __init__(self):
         self.filename = os.path.join(
@@ -16,8 +23,3 @@ class GameLogger:
             f.write(newString)
 
 
-class LogState(Enum):
-
-    EXERCISE_STARTED = 0
-    CONTACT_DETECTED = 1
-    EXERCISE_ENDED = 2
