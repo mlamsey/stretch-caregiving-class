@@ -33,8 +33,6 @@ class StretchSound:
             "sounds",
         )
 
-        # AM: why do we need to set rate here????
-        self.rate = 20
         self.handle = SoundClient()
 
     def main(self):
