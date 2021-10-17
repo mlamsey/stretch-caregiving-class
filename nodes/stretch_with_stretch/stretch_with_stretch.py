@@ -167,7 +167,7 @@ class stretch_with_stretch(hm.HelloNode):
         )
 
         # Wait for sound play to start
-        rospy.sleep(1)
+        rospy.sleep(2)
 
         # notify
         self.robot_initialized_publisher.publish(True)
