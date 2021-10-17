@@ -32,21 +32,18 @@ class GameLauncher:
         self.robot_calibrated = True
 
     def main(self):
-        # wait for handshake
-        while not self.robot_calibrated:
-            pass
+        while not rospy.is_shutdown():
+            if self.robot_calibrated:
+                break
 
-        # launch menu select
-        if self.robot_calibrated:
+        while not rospy.is_shutdown():
             gameChoice = menu_select.get_user_input()
             if gameChoice == 1:
                 rospy.loginfo("Exercise A is ready to begin.")
-                # launch game
-                rospy.loginfo("AUTOMATICALLY LAUNCHING GAME")
                 self.start_game_publisher.publish(True)
-                rospy.spin()
+                break
             else:
-                gameChoice = menu_select.get_user_input()
+                rospy.loginfo("Exercise is not yet implemented.")
 
 
 if __name__ == "__main__":

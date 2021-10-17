@@ -124,7 +124,9 @@ class stretch_with_stretch(hm.HelloNode):
         self.move_to_pose(calibration_pose)
         rospy.sleep(2)  # give robot time to settle
 
+        rospy.loginfo("*" * 40)
         rospy.loginfo("Shake hands with the robot to start the game!")
+        rospy.loginfo("*" * 40)
 
         while not rospy.is_shutdown():
             if self.wrist_yaw_effort is not None:
@@ -157,33 +159,34 @@ class stretch_with_stretch(hm.HelloNode):
             wait_for_first_pointcloud=False,
         )
 
+        rate = rospy.Rate(self.rate)
+
         # Wait for initialization to complete
         while self.joint_states is None:
-            rospy.spin()
+            rate.sleep()
 
         # Activate hold pose
         self.move_to_pose(
             {"joint_lift": self.lift_position, "wrist_extension": self.wrist_position}
         )
 
-        # Wait for sound play to start
-        rospy.sleep(2)
+        rospy.loginfo("Waiting 5 more seconds...")
+        rospy.sleep(5)  # give ros nodes time to initialize
 
-        # notify
-        self.robot_initialized_publisher.publish(True)
+        if not rospy.is_shutdown():
+            self.robot_initialized_publisher.publish(True)  # notify
+        rospy.loginfo("Initialization Completed.")
 
         # Wait for calibration to complete
         self.wait_for_calibration_handshake()
 
-        rate = rospy.Rate(self.rate)
         while not rospy.is_shutdown():
             if self.wrist_yaw_effort is not None:
                 self.check_for_wrist_contact()
-
             rate.sleep()
 
-        # notify
-        self.robot_done_publisher.publish(True)
+        if not rospy.is_shutdown():
+            self.robot_done_publisher.publish(True)  # notify
 
 
 if __name__ == "__main__":
