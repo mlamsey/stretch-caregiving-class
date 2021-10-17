@@ -33,8 +33,14 @@ class stretch_with_stretch(hm.HelloNode):
         self.wrist_contact_publisher = rospy.Publisher(
             "/wrist_contact_detected", Bool, queue_size=1
         )
+        self.robot_initialized_publisher = rospy.Publisher(
+            "/game_state/robot_initialized", Bool, queue_size=1
+        )
         self.robot_calibrated_publisher = rospy.Publisher(
             "/game_state/robot_calibrated", Bool, queue_size=1
+        )
+        self.robot_done_publisher = rospy.Publisher(
+            "/game_state/robot_done", Bool, queue_size=1
         )
 
         # Joint State Inits
@@ -150,25 +156,34 @@ class stretch_with_stretch(hm.HelloNode):
             "node_namespace",
             wait_for_first_pointcloud=False,
         )
-        rate = rospy.Rate(self.rate)
 
         # Wait for initialization to complete
         while self.joint_states is None:
-            pass
+            rospy.spin()
 
         # Activate hold pose
         self.move_to_pose(
             {"joint_lift": self.lift_position, "wrist_extension": self.wrist_position}
         )
 
+        # Wait for sound play to start
+        rospy.sleep(1)
+
+        # notify
+        self.robot_initialized_publisher.publish(True)
+
         # Wait for calibration to complete
         self.wait_for_calibration_handshake()
 
+        rate = rospy.Rate(self.rate)
         while not rospy.is_shutdown():
             if self.wrist_yaw_effort is not None:
                 self.check_for_wrist_contact()
 
             rate.sleep()
+
+        # notify
+        self.robot_done_publisher.publish(True)
 
 
 if __name__ == "__main__":
