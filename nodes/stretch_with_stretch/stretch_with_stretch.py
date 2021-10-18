@@ -10,7 +10,6 @@ import numpy as np
 
 # ROS Stuff
 import rospy
-import stretch_funmap.navigate as nv
 from sensor_msgs.msg import JointState
 
 # Messages

@@ -3,11 +3,10 @@ from __future__ import print_function
 
 # ROS
 import rospy
+from menu import get_user_input
 
 # Messages
 from std_msgs.msg import Bool, String
-
-from menu import get_user_input
 
 
 class GameLauncher:
