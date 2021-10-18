@@ -33,12 +33,8 @@ class stretch_with_stretch(hm.HelloNode):
         )
 
         # Publishers
-        self.notify_publisher = rospy.Publisher(
-            "/sws_notify", Bool, queue_size=1
-        )
-        self.sws_ready_publisher = rospy.Publisher(
-            "/sws_ready", Bool, queue_size=1
-        )
+        self.notify_publisher = rospy.Publisher("/sws_notify", Bool, queue_size=1)
+        self.sws_ready_publisher = rospy.Publisher("/sws_ready", Bool, queue_size=1)
         self.wrist_contact_publisher = rospy.Publisher(
             "/sws_contact_detected", Bool, queue_size=1
         )
@@ -78,7 +74,6 @@ class stretch_with_stretch(hm.HelloNode):
         self.calibration_arm_extension = 0.05  # m
         self.exercise_radius = 0.635  # m (average human arm length)
 
-
     def joint_state_callback(self, joint_states):
         # Update Joint State
         with self.joint_states_lock:
@@ -99,7 +94,7 @@ class stretch_with_stretch(hm.HelloNode):
         # Store necessary items
         self.lift_position = lift_position
         self.wrist_position = wrist_position
-    
+
     def select_exercise_callback(self, data):
         self.current_exercise = data.data
 
@@ -130,7 +125,7 @@ class stretch_with_stretch(hm.HelloNode):
             return bool_wrist_contact
 
         return False
-    
+
     def wait_for_calibration_handshake(self):
         rate = rospy.Rate(self.rate)
 
@@ -151,8 +146,6 @@ class stretch_with_stretch(hm.HelloNode):
                 break
             rate.sleep()
 
-        rospy.loginfo("Calibration handshake completed!")
-    
     def wait_for_exercise_start(self):
         rate = rospy.Rate(self.rate)
         while not rospy.is_shutdown():
@@ -160,25 +153,31 @@ class stretch_with_stretch(hm.HelloNode):
             if self.current_exercise is not None:
                 break
             rate.sleep()
-        
+
+        rospy.loginfo("Exercise {} selected".format(self.current_exercise))
+
         # reposition robot
         # TODO: move robot
 
         # start exercise
+        rospy.loginfo("Exercise {} starting...".format(self.current_exercise))
         self.sws_start_exercise_publisher.publish(self.current_exercise)
 
     def wait_for_exercise_stop(self):
         rate = rospy.Rate(self.rate)
 
+        extra = 3  # give a couple extra seconds for the startup sound
         duration = 15
-        stop_time = rospy.Time.now().secs + duration
+        stop_time = rospy.Time.now().secs + duration + extra
         while not rospy.is_shutdown():
+            self.sws_ready_publisher.publish(False)
             self.check_for_wrist_contact(publish=True)
             if rospy.Time.now().secs > stop_time:
                 break
             rate.sleep()
-        
+
         # stop exercise
+        rospy.loginfo("Exercise {} complete!".format(self.current_exercise))
         self.sws_stop_exercise_publisher.publish(True)
         self.current_exercise = None
 
@@ -219,11 +218,14 @@ class stretch_with_stretch(hm.HelloNode):
         rospy.loginfo("Waiting 5 more seconds...")
         rospy.sleep(5)  # give ros nodes time to initialize
 
-        rospy.loginfo("Initialization Completed.")
+        rospy.loginfo("Initialization completed.")
         self.notify_publisher.publish(True)  # notify
 
         # wait for calibration to complete
         self.wait_for_calibration_handshake()
+
+        rospy.loginfo("Calibration completed.")
+        self.notify_publisher.publish(True)  # notify
 
         while not rospy.is_shutdown():
             # wait for an exercise to be selected

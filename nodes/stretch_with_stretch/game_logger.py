@@ -21,5 +21,3 @@ class GameLogger:
             currTime = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
             newString = "{}, {}, {}\n".format(currTime, currExercise, logState.name)
             f.write(newString)
-
-

@@ -41,7 +41,7 @@ class GameManager:
 
         # Logger
         self.logger = GameLogger()
-    
+
     def reset_score(self):
         self.score = 0
 
@@ -54,6 +54,7 @@ class GameManager:
         rospy.sleep(0.75)
 
     def start_exercise_callback(self, data):
+        rospy.sleep(3.0)  # wait for startup sound
         self.current_exercise = data.data
 
     def stop_exercise_callback(self, data):
@@ -63,7 +64,7 @@ class GameManager:
 
     def wrist_contact_callback(self, data):
         self.contact_detected = data.data
-    
+
     def main(self):
         rate = rospy.Rate(self.rate)
         while not rospy.is_shutdown():

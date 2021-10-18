@@ -19,8 +19,7 @@ def menu_selection(ex_select):
         rospy.loginfo("Input too long!")
         return None
 
-    # if ex_select not in ["A", "B", "C"]:
-    if ex_select not in ["A"]:
+    if ex_select not in ["A", "B"]:
         rospy.loginfo("Exercise {} is not yet implemented".format(ex_select))
         return None
 
@@ -35,14 +34,17 @@ def get_user_input():
         msg = "Please enter a selection.      "
         user_input = raw_input(msg)
         user_input = user_input.replace(" ", "")
+        if user_input.upper() == "Q":
+            return None
 
         msg = "You have selected {}\n".format(user_input)
         msg += "Is this correct? Press y/Y to proceed.      "
         decision = raw_input(msg)
-        if decision.upper() == "Y":
+        if decision.upper() == "Q":
+            return None
+        elif decision.upper() == "Y":
             gameChoice = menu_selection(user_input)
             if gameChoice is not None:
                 input_confirmed = True
 
     return gameChoice
-

@@ -32,13 +32,18 @@ class GameLauncher:
     def main(self):
         # wait for stretch with stretch to be ready
         while not rospy.is_shutdown():
-            if self.sws_ready:
+            if not self.sws_ready:
+                continue
+
+            selection = get_user_input()
+            if selection is None:
                 break
 
-        if not rospy.is_shutdown():
-            selection = get_user_input()
             rospy.loginfo("Exercise {} is ready to begin.".format(selection))
             self.select_exercise_publisher.publish(selection)
+
+            rospy.sleep(5)  # wait for exercies to end
+            self.sws_ready = False
 
 
 if __name__ == "__main__":
