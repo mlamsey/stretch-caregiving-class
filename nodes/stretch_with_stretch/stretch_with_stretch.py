@@ -271,18 +271,6 @@ class stretch_with_stretch(hm.HelloNode):
 
         self.goto_rest_position()
 
-    def exercise_forward_kinematics(self, theta_degrees):
-        # returns the x (base travel) and y (arm extension) given target reach angle theta
-
-        # Shorthand
-        r = self.exercise_radius
-        t = np.radians(theta_degrees)
-
-        # FK
-        x = r * np.sin(t)
-        y = r * (1 - np.cos(t))
-        return x, y
-
     def main(self):
         hm.HelloNode.main(
             self,
