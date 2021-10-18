@@ -7,6 +7,7 @@ import threading
 # Stretch Imports
 import hello_helpers.hello_misc as hm
 import numpy as np
+import stretch_gestures
 
 # ROS Stuff
 import rospy
@@ -73,13 +74,18 @@ class stretch_with_stretch(hm.HelloNode):
 
         # Exercise Configuration
         self.calibration_pose = {
-            "joint_lift": 0.75,  # m
+            "joint_lift": 0.7,  # m
             "wrist_extension": 0.05,  # m
             "joint_wrist_yaw": 0.0,  # rad
-            "joint_gripper_finger_left": 0.0,
+            "joint_gripper_finger_left": 0.1,
+            "joint_head_pan": np.deg2rad(-90.0),  # rad
+            "joint_head_tilt": -0.2,  # rad
         }
         self.calibration_xya = None
         self.exercise_radius = 0.635  # m (average human arm length)
+
+        # Gestures
+        self.stretch_gestures = stretch_gestures.StretchGestures(self.move_to_pose)
 
     def joint_state_callback(self, joint_states):
         # Update Joint State
@@ -141,6 +147,11 @@ class stretch_with_stretch(hm.HelloNode):
         delta_x = self.calibration_xya[0] - current_xya[0]
         delta_a = self.calibration_xya[2] - current_xya[2]
 
+        # get lift height
+        joint_lift = 0.8  #m
+        if self.current_exercise == "C":
+            joint_lift = self.calibration_pose["joint_lift"]
+
         # get target position
         target_x = 0.0
         if self.current_exercise == "A":  # go to the right
@@ -155,10 +166,6 @@ class stretch_with_stretch(hm.HelloNode):
         elif self.current_exercise == "B":  # go to the left
             target_a = np.deg2rad(-30.0)
 
-        # reposition wrist
-        wrist_extension = self.calibration_pose["wrist_extension"]
-        self.move_to_pose({"wrist_extension": wrist_extension}, async=False)
-
         # turn back to calibration angle
         at_goal = self.move_base.turn(delta_a, publish_visualizations=False)
 
@@ -168,6 +175,17 @@ class stretch_with_stretch(hm.HelloNode):
         # turn to exercise angle
         if target_a is not None:
             at_goal = self.move_base.turn(target_a, publish_visualizations=False)
+
+        # reposition wrist
+        wrist_extension = self.calibration_pose["wrist_extension"] + 0.5
+        self.move_to_pose(
+            {
+                "joint_lift": joint_lift,
+                "wrist_extension": wrist_extension,
+            },
+            async=False
+        )
+
 
         rospy.loginfo("Repositioning for exercise {}... done!".format(self.current_exercise))
     
@@ -253,7 +271,7 @@ class stretch_with_stretch(hm.HelloNode):
                 break
             elif now > delay_time:
                 # movement
-                pos = self.wrist_position + 0.01
+                pos = self.wrist_position - 0.01
                 self.move_to_pose({"wrist_extension": pos}, async=True)
 
             rate.sleep()
@@ -269,6 +287,8 @@ class stretch_with_stretch(hm.HelloNode):
 
         self.notify_publisher.publish(True)  # notify
 
+        self.stretch_gestures.nod(3)
+        
         self.goto_rest_position()
 
     def main(self):
