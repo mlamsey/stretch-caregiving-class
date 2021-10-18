@@ -3,14 +3,14 @@
 from __future__ import print_function
 
 import threading
-import numpy as np
 
 # Stretch Imports
 import hello_helpers.hello_misc as hm
-import stretch_funmap.navigate as nv
+import numpy as np
 
 # ROS Stuff
 import rospy
+import stretch_funmap.navigate as nv
 from sensor_msgs.msg import JointState
 
 # Messages
@@ -81,7 +81,6 @@ class stretch_with_stretch(hm.HelloNode):
         self.calibration_xya = None
         self.exercise_radius = 0.635  # m (average human arm length)
 
-
     def joint_state_callback(self, joint_states):
         # Update Joint State
         with self.joint_states_lock:
@@ -91,9 +90,13 @@ class stretch_with_stretch(hm.HelloNode):
         lift_position, lift_velocity, lift_effort = hm.get_lift_state(joint_states)
         wrist_position, wrist_velocity, wrist_effort = hm.get_wrist_state(joint_states)
 
-        self.wrist_extension_effort = joint_states.effort[joint_states.name.index("wrist_extension")]
+        self.wrist_extension_effort = joint_states.effort[
+            joint_states.name.index("wrist_extension")
+        ]
         self.lift_effort = joint_states.effort[joint_states.name.index("joint_lift")]
-        self.wrist_yaw_effort = joint_states.effort[joint_states.name.index("joint_wrist_yaw")]
+        self.wrist_yaw_effort = joint_states.effort[
+            joint_states.name.index("joint_wrist_yaw")
+        ]
 
         # Store necessary items
         self.lift_position = lift_position
@@ -144,7 +147,7 @@ class stretch_with_stretch(hm.HelloNode):
             if self.check_for_wrist_contact(publish=False):
                 break
             rate.sleep()
-        
+
         # set x, y, a here in case we move the robot before calibration
         self.calibration_xya, _ = self.get_robot_floor_pose_xya()
 
@@ -170,11 +173,11 @@ class stretch_with_stretch(hm.HelloNode):
         self.move_to_pose({"wrist_extension": wrist_extension}, async=False)
 
         # turn back
-        delta_a =  self.calibration_xya[2] - current_xya[2]
+        delta_a = self.calibration_xya[2] - current_xya[2]
         at_goal = self.move_base.turn(delta_a, publish_visualizations=False)
 
         # move base
-        delta_x =  self.calibration_xya[0] - current_xya[0]
+        delta_x = self.calibration_xya[0] - current_xya[0]
         if self.current_exercise == "A":  # go to the right
             delta_x += self.exercise_radius / 2
         elif self.current_exercise == "B":  # go to the left
@@ -207,7 +210,9 @@ class stretch_with_stretch(hm.HelloNode):
 
         extra, duration = 3, 10
         start_time = rospy.Time.now().secs
-        delay_time = start_time + extra # give a couple extra seconds for the startup sound
+        delay_time = (
+            start_time + extra
+        )  # give a couple extra seconds for the startup sound
         stop_time = delay_time + duration + extra
         while not rospy.is_shutdown():
             self.sws_ready_publisher.publish(False)
@@ -242,12 +247,11 @@ class stretch_with_stretch(hm.HelloNode):
         self.move_to_pose({"wrist_extension": wrist_extension}, async=False)
 
         # turn back
-        delta_a =  self.calibration_xya[2] - current_xya[2]
+        delta_a = self.calibration_xya[2] - current_xya[2]
         at_goal = self.move_base.turn(delta_a, publish_visualizations=False)
 
         rospy.loginfo("Start repositioning the robot... done!")
 
-    
     def exercise_forward_kinematics(self, theta_degrees):
         # returns the x (base travel) and y (arm extension) given target reach angle theta
 
