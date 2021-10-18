@@ -181,7 +181,6 @@ class stretch_with_stretch(hm.HelloNode):
         self.sws_stop_exercise_publisher.publish(True)
         self.current_exercise = None
 
-        # TODO: change this to a different sound
         self.notify_publisher.publish(True)  # notify
 
     def exercise_forward_kinematics(self, theta_degrees):
