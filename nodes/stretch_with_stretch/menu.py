@@ -19,7 +19,7 @@ def menu_selection(ex_select):
         rospy.loginfo("Input too long!")
         return None
 
-    if ex_select not in ["A", "B"]:
+    if ex_select not in ["A", "B", "C"]:
         rospy.loginfo("Exercise {} is not yet implemented".format(ex_select))
         return None
 

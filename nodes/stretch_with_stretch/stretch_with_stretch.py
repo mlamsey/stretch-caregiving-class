@@ -3,10 +3,11 @@
 from __future__ import print_function
 
 import threading
+import numpy as np
 
 # Stretch Imports
 import hello_helpers.hello_misc as hm
-import numpy as np
+import stretch_funmap.navigate as nv
 
 # ROS Stuff
 import rospy
@@ -19,6 +20,7 @@ from std_msgs.msg import Bool, String
 class stretch_with_stretch(hm.HelloNode):
     def __init__(self):
         hm.HelloNode.__init__(self)
+        self.move_base = nv.MoveBase(self)
 
         # Rate for rospy.Rate() called in main
         self.rate = 20
@@ -50,28 +52,35 @@ class stretch_with_stretch(hm.HelloNode):
         self.lift_position = None
         self.lift_effort = None
 
-        self.arm_effort = None
+        self.wrist_extension = None
+        self.wrist_extension_effort = None
 
-        self.wrist_position = None
+        self.wrist_yaw = None
         self.wrist_yaw_effort = None
 
         # Threading for callbacks
         self.joint_states_lock = threading.Lock()
 
         # Internal variables
+        self.lift_effort_max = 50  # N?
+        self.lift_effort_min = 35  # N?
+        self.wrist_extension_max = 10  # N?
+        self.wrist_extension_min = -10  # N?
         self.wrist_yaw_effort_contact_threshold = 0.35  # N
-        self.lift_contact_upper_threshold = 53  # N?
-        self.lift_contact_lower_threshold = 35  # N?
-        self.arm_contact_upper_threshold = 10  # N?
-        self.arm_contact_lower_threshold = -10  # N?
 
         # Exercise Init
         self.current_exercise = None
 
         # Exercise Configuration
-        self.calibration_lift_height = 0.75  # m
-        self.calibration_arm_extension = 0.05  # m
+        self.calibration_pose = {
+            "joint_lift": 0.75,  # m
+            "wrist_extension": 0.05,  # m
+            "joint_wrist_yaw": 0.0,  # rad
+            "joint_gripper_finger_left": 0.0,
+        }
+        self.calibration_xya = None
         self.exercise_radius = 0.635  # m (average human arm length)
+
 
     def joint_state_callback(self, joint_states):
         # Update Joint State
@@ -82,13 +91,9 @@ class stretch_with_stretch(hm.HelloNode):
         lift_position, lift_velocity, lift_effort = hm.get_lift_state(joint_states)
         wrist_position, wrist_velocity, wrist_effort = hm.get_wrist_state(joint_states)
 
-        self.wrist_yaw_effort = joint_states.effort[
-            joint_states.name.index("joint_wrist_yaw")
-        ]
+        self.wrist_extension_effort = joint_states.effort[joint_states.name.index("wrist_extension")]
         self.lift_effort = joint_states.effort[joint_states.name.index("joint_lift")]
-        self.arm_effort = joint_states.effort[
-            joint_states.name.index("wrist_extension")
-        ]
+        self.wrist_yaw_effort = joint_states.effort[joint_states.name.index("joint_wrist_yaw")]
 
         # Store necessary items
         self.lift_position = lift_position
@@ -98,41 +103,36 @@ class stretch_with_stretch(hm.HelloNode):
         self.current_exercise = data.data
 
     def check_for_wrist_contact(self, publish=False):
+        bool_wrist_contact = False
         if self.wrist_yaw_effort is not None:
-            # rospy.loginfo("Current Wrist Yaw Effort: %f" % self.wrist_yaw_effort)
 
-            bool_wrist_contact = False
-
+            # rospy.loginfo("wrist_yaw_effort: {}".format(self.wrist_yaw_effort))
             if abs(self.wrist_yaw_effort) > self.wrist_yaw_effort_contact_threshold:
                 bool_wrist_contact = True
 
-            if (
-                self.lift_effort < self.lift_contact_lower_threshold
-                or self.lift_effort > self.lift_contact_upper_threshold
-            ):
-                bool_wrist_contact = True
+            # rospy.loginfo("lift_effort: {}".format(self.lift_effort))
+            # if (
+            #     self.lift_effort < self.lift_effort_min
+            #     or self.lift_effort > self.lift_effort_max
+            # ):
+            #     bool_wrist_contact = True
 
-            if (
-                self.arm_effort < self.arm_contact_lower_threshold
-                or self.arm_effort > self.arm_contact_upper_threshold
-            ):
-                bool_wrist_contact = True
+            # rospy.loginfo("wrist_extension_effort: {}".format(self.wrist_extension_effort))
+            # if (
+            #     self.wrist_extension_effort < self.wrist_extension_min
+            #     or self.wrist_extension_effort > self.wrist_extension_max
+            # ):
+            #     bool_wrist_contact = True
 
-            if publish:
-                self.wrist_contact_publisher.publish(bool_wrist_contact)
+        if publish:
+            self.wrist_contact_publisher.publish(bool_wrist_contact)
 
-            return bool_wrist_contact
-
-        return False
+        return bool_wrist_contact
 
     def wait_for_calibration_handshake(self):
         rate = rospy.Rate(self.rate)
 
-        calibration_pose = {
-            "joint_lift": self.calibration_lift_height,
-            "wrist_extension": self.calibration_arm_extension,
-        }
-        self.move_to_pose(calibration_pose)
+        self.move_to_pose(self.calibration_pose)
         rospy.sleep(2)  # give robot time to settle
 
         rospy.loginfo("*" * 40)
@@ -144,6 +144,9 @@ class stretch_with_stretch(hm.HelloNode):
             if self.check_for_wrist_contact(publish=False):
                 break
             rate.sleep()
+        
+        # set x, y, a here in case we move the robot before calibration
+        self.calibration_xya, _ = self.get_robot_floor_pose_xya()
 
     def wait_for_exercise_start(self):
         rate = rospy.Rate(self.rate)
@@ -153,27 +156,75 @@ class stretch_with_stretch(hm.HelloNode):
                 break
             rate.sleep()
 
+        if rospy.is_shutdown():
+            return
+
         rospy.loginfo("Exercise {} selected".format(self.current_exercise))
 
-        # reposition robot
-        # TODO: move robot
+        rospy.loginfo("Start repositioning the robot...")
+
+        current_xya, _ = self.get_robot_floor_pose_xya()
+
+        # reposition wrist
+        wrist_extension = self.calibration_pose["wrist_extension"]
+        self.move_to_pose({"wrist_extension": wrist_extension}, async=False)
+
+        # turn back
+        delta_a =  self.calibration_xya[2] - current_xya[2]
+        at_goal = self.move_base.turn(delta_a, publish_visualizations=False)
+
+        # move base
+        delta_x =  self.calibration_xya[0] - current_xya[0]
+        if self.current_exercise == "A":  # go to the right
+            delta_x += self.exercise_radius / 2
+        elif self.current_exercise == "B":  # go to the left
+            delta_x -= self.exercise_radius / 2
+        at_goal = self.move_base.forward(delta_x, detect_obstacles=False)
+
+        if self.current_exercise == "C":
+            # for debugging
+            return
+
+        # turn
+        if self.current_exercise == "A":  # go to the right
+            delta_a = np.deg2rad(30.0)
+        elif self.current_exercise == "B":  # go to the left
+            delta_a = np.deg2rad(-30.0)
+        at_goal = self.move_base.turn(delta_a, publish_visualizations=False)
+
+        rospy.loginfo("Start repositioning the robot... done!")
 
         # start exercise
         rospy.loginfo("Exercise {} starting...".format(self.current_exercise))
         self.sws_start_exercise_publisher.publish(self.current_exercise)
 
     def wait_for_exercise_stop(self):
+        if self.current_exercise == "C":
+            # for debugging
+            return
+
         rate = rospy.Rate(self.rate)
 
-        extra = 3  # give a couple extra seconds for the startup sound
-        duration = 15
-        stop_time = rospy.Time.now().secs + duration + extra
+        extra, duration = 3, 10
+        start_time = rospy.Time.now().secs
+        delay_time = start_time + extra # give a couple extra seconds for the startup sound
+        stop_time = delay_time + duration + extra
         while not rospy.is_shutdown():
             self.sws_ready_publisher.publish(False)
             self.check_for_wrist_contact(publish=True)
-            if rospy.Time.now().secs > stop_time:
+
+            now = rospy.Time.now().secs
+            if now > stop_time:
                 break
+            elif now > delay_time:
+                # movement
+                pos = self.wrist_position + 0.01
+                self.move_to_pose({"wrist_extension": pos}, async=True)
+
             rate.sleep()
+
+        if rospy.is_shutdown():
+            return
 
         # stop exercise
         rospy.loginfo("Exercise {} complete!".format(self.current_exercise))
@@ -182,6 +233,21 @@ class stretch_with_stretch(hm.HelloNode):
 
         self.notify_publisher.publish(True)  # notify
 
+        rospy.loginfo("Start repositioning the robot...")
+
+        current_xya, _ = self.get_robot_floor_pose_xya()
+
+        # reposition wrist
+        wrist_extension = self.calibration_pose["wrist_extension"]
+        self.move_to_pose({"wrist_extension": wrist_extension}, async=False)
+
+        # turn back
+        delta_a =  self.calibration_xya[2] - current_xya[2]
+        at_goal = self.move_base.turn(delta_a, publish_visualizations=False)
+
+        rospy.loginfo("Start repositioning the robot... done!")
+
+    
     def exercise_forward_kinematics(self, theta_degrees):
         # returns the x (base travel) and y (arm extension) given target reach angle theta
 
@@ -202,16 +268,21 @@ class stretch_with_stretch(hm.HelloNode):
             wait_for_first_pointcloud=False,
         )
 
+        # print("go")
+        # angle = hm.angle_diff_rad(0, np.deg2rad(10))
+        # at_goal = self.move_base.turn(angle, publish_visualizations=False)
+        # at_goal = self.move_base.forward(-0.5, detect_obstacles=False)
+        # print(at_goal)
+        # rospy.sleep(1.0)
+
         rate = rospy.Rate(self.rate)
 
         # wait for initialization to complete
         while self.joint_states is None:
             rate.sleep()
 
-        # activate hold pose
-        self.move_to_pose(
-            {"joint_lift": self.lift_position, "wrist_extension": self.wrist_position}
-        )
+        # move to calibration pose (early)
+        self.move_to_pose(self.calibration_pose)
 
         rospy.loginfo("Waiting 5 more seconds...")
         rospy.sleep(5)  # give ros nodes time to initialize
