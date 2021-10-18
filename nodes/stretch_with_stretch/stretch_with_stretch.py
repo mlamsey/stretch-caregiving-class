@@ -131,6 +131,62 @@ class stretch_with_stretch(hm.HelloNode):
             self.wrist_contact_publisher.publish(bool_wrist_contact)
 
         return bool_wrist_contact
+    
+    def goto_exercise_position(self):
+        rospy.loginfo("Repositioning for exercise {}...".format(self.current_exercise))
+
+        current_xya, _ = self.get_robot_floor_pose_xya()
+
+        # get offsets from calibration xya
+        delta_x = self.calibration_xya[0] - current_xya[0]
+        delta_a = self.calibration_xya[2] - current_xya[2]
+
+        # get target position
+        target_x = 0.0
+        if self.current_exercise == "A":  # go to the right
+            target_x = self.exercise_radius / 2
+        elif self.current_exercise == "B":  # go to the left
+            target_x = -1 * self.exercise_radius / 2
+
+        # get target angle
+        target_a = None
+        if self.current_exercise == "A":  # go to the right
+            target_a = np.deg2rad(30.0)
+        elif self.current_exercise == "B":  # go to the left
+            target_a = np.deg2rad(-30.0)
+
+        # reposition wrist
+        wrist_extension = self.calibration_pose["wrist_extension"]
+        self.move_to_pose({"wrist_extension": wrist_extension}, async=False)
+
+        # turn back to calibration angle
+        at_goal = self.move_base.turn(delta_a, publish_visualizations=False)
+
+        # move base
+        at_goal = self.move_base.forward(delta_x + target_x, detect_obstacles=False)
+
+        # turn to exercise angle
+        if target_a is not None:
+            at_goal = self.move_base.turn(target_a, publish_visualizations=False)
+
+        rospy.loginfo("Repositioning for exercise {}... done!".format(self.current_exercise))
+    
+    def goto_rest_position(self):
+        rospy.loginfo("Returning to rest position...")
+
+        current_xya, _ = self.get_robot_floor_pose_xya()
+
+        # get offset from calibration xya
+        delta_a = self.calibration_xya[2] - current_xya[2]
+
+        # reposition wrist
+        wrist_extension = self.calibration_pose["wrist_extension"]
+        self.move_to_pose({"wrist_extension": wrist_extension}, async=False)
+
+        # turn back to calibration angle
+        at_goal = self.move_base.turn(delta_a, publish_visualizations=False)
+
+        rospy.loginfo("Returning to rest position... done!")
 
     def wait_for_calibration_handshake(self):
         rate = rospy.Rate(self.rate)
@@ -164,55 +220,29 @@ class stretch_with_stretch(hm.HelloNode):
 
         rospy.loginfo("Exercise {} selected".format(self.current_exercise))
 
-        rospy.loginfo("Start repositioning the robot...")
+        # reposition robot
+        self.goto_exercise_position()
 
-        current_xya, _ = self.get_robot_floor_pose_xya()
-
-        # reposition wrist
-        wrist_extension = self.calibration_pose["wrist_extension"]
-        self.move_to_pose({"wrist_extension": wrist_extension}, async=False)
-
-        # turn back
-        delta_a = self.calibration_xya[2] - current_xya[2]
-        at_goal = self.move_base.turn(delta_a, publish_visualizations=False)
-
-        # move base
-        delta_x = self.calibration_xya[0] - current_xya[0]
-        if self.current_exercise == "A":  # go to the right
-            delta_x += self.exercise_radius / 2
-        elif self.current_exercise == "B":  # go to the left
-            delta_x -= self.exercise_radius / 2
-        at_goal = self.move_base.forward(delta_x, detect_obstacles=False)
-
+        # exercise C returns the robot to the calbiration xya
         if self.current_exercise == "C":
-            # for debugging
+            self.current_exercise = None 
             return
-
-        # turn
-        if self.current_exercise == "A":  # go to the right
-            delta_a = np.deg2rad(30.0)
-        elif self.current_exercise == "B":  # go to the left
-            delta_a = np.deg2rad(-30.0)
-        at_goal = self.move_base.turn(delta_a, publish_visualizations=False)
-
-        rospy.loginfo("Start repositioning the robot... done!")
 
         # start exercise
         rospy.loginfo("Exercise {} starting...".format(self.current_exercise))
         self.sws_start_exercise_publisher.publish(self.current_exercise)
 
     def wait_for_exercise_stop(self):
-        if self.current_exercise == "C":
-            # for debugging
+        # exercise is already over (e.g., exercise C is a "rest")
+        if self.current_exercise is None:
             return
 
         rate = rospy.Rate(self.rate)
 
-        extra, duration = 3, 10
+        extra, duration = 3, 8
         start_time = rospy.Time.now().secs
-        delay_time = (
-            start_time + extra
-        )  # give a couple extra seconds for the startup sound
+        # give a couple extra seconds for the startup sound
+        delay_time = start_time + extra
         stop_time = delay_time + duration + extra
         while not rospy.is_shutdown():
             self.sws_ready_publisher.publish(False)
@@ -232,25 +262,14 @@ class stretch_with_stretch(hm.HelloNode):
             return
 
         # stop exercise
+        self.current_exercise = None
+
         rospy.loginfo("Exercise {} complete!".format(self.current_exercise))
         self.sws_stop_exercise_publisher.publish(True)
-        self.current_exercise = None
 
         self.notify_publisher.publish(True)  # notify
 
-        rospy.loginfo("Start repositioning the robot...")
-
-        current_xya, _ = self.get_robot_floor_pose_xya()
-
-        # reposition wrist
-        wrist_extension = self.calibration_pose["wrist_extension"]
-        self.move_to_pose({"wrist_extension": wrist_extension}, async=False)
-
-        # turn back
-        delta_a = self.calibration_xya[2] - current_xya[2]
-        at_goal = self.move_base.turn(delta_a, publish_visualizations=False)
-
-        rospy.loginfo("Start repositioning the robot... done!")
+        self.goto_rest_position()
 
     def exercise_forward_kinematics(self, theta_degrees):
         # returns the x (base travel) and y (arm extension) given target reach angle theta
@@ -271,13 +290,6 @@ class stretch_with_stretch(hm.HelloNode):
             "node_namespace",
             wait_for_first_pointcloud=False,
         )
-
-        # print("go")
-        # angle = hm.angle_diff_rad(0, np.deg2rad(10))
-        # at_goal = self.move_base.turn(angle, publish_visualizations=False)
-        # at_goal = self.move_base.forward(-0.5, detect_obstacles=False)
-        # print(at_goal)
-        # rospy.sleep(1.0)
 
         rate = rospy.Rate(self.rate)
 

@@ -59,7 +59,7 @@ class GameManager:
 
     def stop_exercise_callback(self, data):
         self.current_exercise = None
-        rospy.loginfo("Exercise done. {} points scored!".format(self.score))
+        rospy.loginfo("Exercise done: {} points scored!".format(self.score))
         self.reset_score()
 
     def wrist_contact_callback(self, data):

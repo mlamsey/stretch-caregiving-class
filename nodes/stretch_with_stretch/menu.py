@@ -28,6 +28,9 @@ def menu_selection(ex_select):
 
 
 def get_user_input():
+    if rospy.is_shutdown():
+        return None
+
     input_confirmed = False
     while not input_confirmed:
         print_menu()
@@ -39,7 +42,8 @@ def get_user_input():
 
         msg = "You have selected {}\n".format(user_input)
         msg += "Is this correct? Press y/Y to proceed.      "
-        decision = raw_input(msg)
+        # decision = raw_input(msg)
+        decision = "Y"  # for faster debugging
         if decision.upper() == "Q":
             return None
         elif decision.upper() == "Y":
