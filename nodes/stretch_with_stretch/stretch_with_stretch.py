@@ -177,7 +177,9 @@ class stretch_with_stretch(hm.HelloNode):
             at_goal = self.move_base.turn(target_a, publish_visualizations=False)
 
         # reposition wrist
-        wrist_extension = self.calibration_pose["wrist_extension"] + 0.5
+        wrist_extension = self.calibration_pose["wrist_extension"]
+        if self.current_exercise != "C":
+            wrist_extension += 0.5  # exted the arm
         self.move_to_pose(
             {
                 "joint_lift": joint_lift,
@@ -185,7 +187,6 @@ class stretch_with_stretch(hm.HelloNode):
             },
             async=False
         )
-
 
         rospy.loginfo("Repositioning for exercise {}... done!".format(self.current_exercise))
     
