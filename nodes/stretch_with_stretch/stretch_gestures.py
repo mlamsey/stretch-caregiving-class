@@ -41,7 +41,7 @@ class StretchGestures():
         self.head_tilt = None
         
         # Motion config
-        self.nod_magnitude = 0.3 # rad
+        self.nod_magnitude = 0.2 # rad
         self.shake_head_magnitude = 0.2 # rad
         self.wiggle_wrist_magnitude = 0.2 # rad
 

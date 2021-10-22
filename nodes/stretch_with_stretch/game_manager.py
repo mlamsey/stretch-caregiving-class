@@ -9,7 +9,7 @@ import rospy
 from game_logger import GameLogger, LogState
 
 # Messages
-from std_msgs.msg import Bool, String
+from std_msgs.msg import Bool, String, UInt8
 
 
 class GameManager:
@@ -33,6 +33,12 @@ class GameManager:
         self.point_scored_publisher = rospy.Publisher(
             "/sws_point_scored", Bool, queue_size=1
         )
+        self.nod_head_publisher = rospy.Publisher(
+            "/sws_nod_head", UInt8, queue_size=1
+        )
+        self.announce_score_publisher = rospy.Publisher(
+            "/sws_announce_score", UInt8, queue_size=1
+        )
 
         # State
         self.current_exercise = None
@@ -54,12 +60,16 @@ class GameManager:
         rospy.sleep(0.75)
 
     def start_exercise_callback(self, data):
-        rospy.sleep(3.0)  # wait for startup sound
         self.current_exercise = data.data
 
     def stop_exercise_callback(self, data):
         self.current_exercise = None
         rospy.loginfo("Exercise done: {} points scored!".format(self.score))
+        self.announce_score_publisher.publish(self.score)
+        if self.score > 5:
+            self.nod_head_publisher.publish(5)
+        elif self.score > 0:
+            self.nod_head_publisher.publish(2)
         self.reset_score()
 
     def wrist_contact_callback(self, data):

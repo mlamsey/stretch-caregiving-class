@@ -15,7 +15,7 @@ import stretch_funmap.navigate as nv
 from sensor_msgs.msg import JointState
 
 # Messages
-from std_msgs.msg import Bool, String
+from std_msgs.msg import Bool, String, UInt8
 
 
 class stretch_with_stretch(hm.HelloNode):
@@ -32,6 +32,9 @@ class stretch_with_stretch(hm.HelloNode):
         )
         self.select_exercise_subscriber = rospy.Subscriber(
             "/sws_select_exercise", String, self.select_exercise_callback
+        )
+        self.nod_head_subscriber = rospy.Subscriber(
+            "/sws_nod_head", UInt8, self.nod_head_callback
         )
 
         # Publishers
@@ -77,7 +80,7 @@ class stretch_with_stretch(hm.HelloNode):
             "joint_lift": 0.7,  # m
             "wrist_extension": 0.05,  # m
             "joint_wrist_yaw": 0.0,  # rad
-            "joint_gripper_finger_left": 5.0,
+            "joint_gripper_finger_left": 0.5,
             "joint_head_pan": np.deg2rad(-90.0),  # rad
             "joint_head_tilt": -0.2,  # rad
         }
@@ -112,6 +115,9 @@ class stretch_with_stretch(hm.HelloNode):
 
     def select_exercise_callback(self, data):
         self.current_exercise = data.data
+
+    def nod_head_callback(self, data):
+        self.stretch_gestures.nod(data.data)
 
     def check_for_wrist_contact(self, publish=False):
         bool_wrist_contact = False
@@ -293,12 +299,12 @@ class stretch_with_stretch(hm.HelloNode):
         # stop exercise
         self.current_exercise = None
 
+        self.notify_publisher.publish(True)  # notify
+
         rospy.loginfo("Exercise {} complete!".format(self.current_exercise))
         self.sws_stop_exercise_publisher.publish(True)
 
-        self.notify_publisher.publish(True)  # notify
-
-        self.stretch_gestures.nod(3)
+        rospy.sleep(2)  # wait for nod
 
         self.goto_rest_position()
 
@@ -319,8 +325,12 @@ class stretch_with_stretch(hm.HelloNode):
         # move to calibration pose (early)
         self.move_to_pose(self.pre_calibration_pose)
 
-        rospy.loginfo("Waiting 5 more seconds...")
-        rospy.sleep(5)  # give ros nodes time to initialize
+        stop_wait_time = rospy.Time.now() + rospy.Duration.from_sec(10.0)
+        while self.check_for_wrist_contact():
+            rospy.sleep(1)
+            if rospy.Time.now() > stop_wait_time:
+                print("Warning: waited too long :(")
+                break
 
         rospy.loginfo("Initialization completed.")
         self.notify_publisher.publish(True)  # notify
