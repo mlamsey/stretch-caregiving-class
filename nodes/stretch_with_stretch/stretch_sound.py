@@ -35,13 +35,13 @@ class StretchSound:
 
         self.handle = SoundClient()
         self.allow_time = rospy.Time.now()
-    
+
     def set_allow_time(self, delay):
         self.allow_time = rospy.Time.now() + rospy.Duration.from_sec(delay)
-    
+
     def is_ready(self):
         return rospy.Time.now() >= self.allow_time
-    
+
     def wait_for_ready(self):
         while not self.is_ready():
             rospy.sleep(0.1)
@@ -65,8 +65,8 @@ class StretchSound:
         self.set_allow_time(0.75)
 
     def announce_score(self, data):
-        fname = "tts/v1/{}.wav".format(data.data)
-        path = os.path.join(self.base_sound_path, fname)
+        fname = "{}.wav".format(data.data)
+        path = os.path.join(self.base_sound_path, "tts", "v1", "en", "ie", fname)
         if os.path.exists(path):
             self.handle.playWave(path, blocking=True)
 
