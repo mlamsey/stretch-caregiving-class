@@ -69,6 +69,13 @@ class StretchSound:
         path = os.path.join(self.base_sound_path, "tts", "v1", "en", "ie", fname)
         if os.path.exists(path):
             self.handle.playWave(path, blocking=True)
+        if data.data < 10:
+            return
+        fname = "nice-job.wav"
+        path = os.path.join(self.base_sound_path, "tts", "v1", "en", "ie", fname)
+        if os.path.exists(path):
+            self.handle.playWave(path, blocking=True)
+
 
     def main(self):
         rospy.spin()
