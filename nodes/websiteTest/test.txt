@@ -1,0 +1,1 @@
+{"exercises": [{"name": "", "actions": [], "duration": ""}, {"name": "hi", "duration": "9", "actions": ["spin"]}]}
