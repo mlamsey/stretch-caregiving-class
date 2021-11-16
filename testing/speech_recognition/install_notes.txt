@@ -1,0 +1,4 @@
+Notes from Matt's install on Ubuntu 20.04
+1) need to pip install pyaudio - first, install dependencies: https://stackoverflow.com/questions/35708238/installing-pyaudio-with-pip-in-a-virtualenv
+2) need to pip install pocketsphinx - first, install dependencies: https://stackoverflow.com/questions/36523705/python-pocketsphinx-requesterror-missing-pocketsphinx-module-ensure-that-pocke
+3) example with mic: https://github.com/Uberi/speech_recognition/blob/master/examples/microphone_recognition.py
