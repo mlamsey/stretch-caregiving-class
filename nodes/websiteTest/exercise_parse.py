@@ -25,11 +25,17 @@ window['background'] = '#E0EEC6'
 l1 = tk.Label(window, text="Configure Exercise", bg="#E0EEC6", font=('helvetica bold', 20))
 l1.pack()
 
-l2 = tk.Label(window, text="Exercise Name", bg="#E0EEC6", font='helvetica 16')
+l2 = tk.Label(window, text="Exercise", bg="#E0EEC6", font='helvetica 16')
 l2.pack()
-txt1 = tk.Entry(window, width=10)
-txt1.pack()
-txt1.config(highlightbackground='#E0EEC6', relief="solid", borderwidth=1, font='helvetica 16')
+variable = tk.StringVar(window)
+variable.set("Sit and Reach") # default value
+txt2 = tk.OptionMenu(window, variable, "Sit and Reach", "Seated Kick", "Exercise 3")
+txt2.pack()
+txt2.config(highlightbackground='#E0EEC6', bg='#E0EEC6', font='helvetica 16')
+
+#txt1 = tk.Entry(window, width=10)
+#txt1.pack()
+#txt1.config(highlightbackground='#E0EEC6', relief="solid", borderwidth=1, font='helvetica 16')
 
 l3 = tk.Label(window, text="Duration (s)", bg="#E0EEC6", font='helvetica 16')
 l3.pack()
