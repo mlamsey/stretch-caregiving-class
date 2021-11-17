@@ -1,0 +1,4 @@
+<launch>
+  <node name="audio_trigger_test" pkg="stretch-caregiving-class" type="audio_trigger_test.py" output="screen"/>
+  <node name="color_listener" pkg="stretch-caregiving-class" type="color_listener.py" output="screen"/>
+</launch>
