@@ -1,1 +1,1 @@
-{"exercises": [{"name": "", "actions": [], "duration": ""}, {"name": "hi", "duration": "9", "actions": ["spin"]}]}
+{"exercises": [{"duration": "15", "name": "hello ", "actions": ["spin"]}]}
