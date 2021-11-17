@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 
 # ROS
 import rospy
@@ -23,7 +23,7 @@ class audio_trigger_test():
         self.n_unique_colors = None
 
         # Config
-        self.recording_time = 5.
+        self.recording_time = 30.
         self.rate = 10
 
     def n_unique_colors_callback(self, data):
@@ -37,7 +37,7 @@ class audio_trigger_test():
     def main(self):
         rate = rospy.Rate(self.rate)
         while not rospy.is_shutdown():
-            input("Press Enter to Query for %i seconds. " % self.recording_time)
+            raw_input("Press Enter to Query for %i seconds. " % self.recording_time)
             self.start_recording_publisher.publish(self.recording_time)
             rospy.sleep(self.recording_time + 1.)
             rate.sleep()

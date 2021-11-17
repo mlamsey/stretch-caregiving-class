@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 
 # ROS
 import rospy
@@ -33,7 +33,10 @@ def parse_string_for_unique_colors(text_string):
 class color_listener():
     def __init__(self):
         rospy.init_node('color_listener')
+
+        # Configure speech recognizer
         self.recognizer = sr.Recognizer()
+        self.recognizer.pause_threshold = 1000.
 
         # Pub/Sub
         self.color_string_publisher = rospy.Publisher("/speech/color", String, queue_size=1)
@@ -49,7 +52,7 @@ class color_listener():
 
     def start_recording_callback(self, data):
         recording_length = data.data
-
+        # TODO: make a while loop that records small chunks?
         with sr.Microphone() as source:
             audio_clip = self.recognizer.record(source, duration=recording_length)
             text_string = self.predict_text(audio_clip)
@@ -61,7 +64,8 @@ class color_listener():
     def predict_text(self, audio_clip):
         rospy.loginfo("Processing Audio...")
         try:
-            return self.recognizer.recognize_sphinx(audio_clip)
+            # return self.recognizer.recognize_sphinx(audio_clip)
+            return self.recognizer.recognize_google(audio_clip)
         except sr.UnknownValueError:
             rospy.loginfo("Sphinx could not understand audio")
             return None
