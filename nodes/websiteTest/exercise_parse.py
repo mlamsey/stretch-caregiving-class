@@ -15,19 +15,27 @@ def writeFile(fileName, exercise_dict):
 #TKinter Window Output
 
 window = tk.Tk('Exercise Routine')
+window.title('Stretch with Stretch: Configure Exercise')
   
 #Styles
 window.geometry('400x300')
-window['background'] = '#856ff8'
+window['background'] = '#E0EEC6'
 
 #Initial Fields
-l1 = tk.Label (window, text="edureka!")
+l1 = tk.Label(window, text="Configure Exercise", bg="#E0EEC6", font=('helvetica bold', 20))
 l1.pack()
 
-txt1 = tk.Entry(window,width=10)
+l2 = tk.Label(window, text="Exercise Name", bg="#E0EEC6", font='helvetica 16')
+l2.pack()
+txt1 = tk.Entry(window, width=10)
 txt1.pack()
-txt2 = tk.Entry(window,width=10)
+txt1.config(highlightbackground='#E0EEC6', relief="solid", borderwidth=1, font='helvetica 16')
+
+l3 = tk.Label(window, text="Duration (s)", bg="#E0EEC6", font='helvetica 16')
+l3.pack()
+txt2 = tk.Entry(window, width=10)
 txt2.pack()
+txt2.config(highlightbackground='#E0EEC6', relief="solid", borderwidth=1, font='helvetica 16')
 
 
 #Storage Dict
@@ -62,11 +70,10 @@ def addNewEx():
 
     
 #Create Buttons
-bt0 = tk.Button(window, text="Add New Exercise", command=addNewEx)
+bt0 = tk.Button(window, text="Add New Exercise", highlightbackground="#E0EEC6", command=addNewEx)
 bt0.pack()
-bt1 = tk.Button(window, text="Enter", command=createRoutine)
+bt1 = tk.Button(window, text="Enter", highlightbackground="#E0EEC6", command=createRoutine)
 bt1.pack()
-
 
 
  
