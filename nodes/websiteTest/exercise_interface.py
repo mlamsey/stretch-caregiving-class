@@ -24,21 +24,38 @@ def get_exercise_directions() -> List[str]:
     ]
 
 
-def get_exercise_specification(name: str, direction: str, difficulty: str, duration: float):
+def get_exercise_specification(
+    name: str, direction: str, difficulty: str, duration: float, cognative: bool
+):
     assert name in get_exercise_list()
     assert direction in get_exercise_directions()
     assert difficulty in get_exercise_difficulties()
 
+    data = {
+        "name": name,
+        "direction": direction,
+        "difficulty": difficulty,
+        "duration": duration,
+        "cognative": cognative,
+    }
+
     if name.lower() == "sit and reach":
-        return _get_sit_and_reach_spec(direction, difficulty, duration)
+        data["movement"] = _get_sit_and_reach_spec(direction, difficulty, duration)
     elif name.lower() == "sit and kick":
-        return _get_sit_and_kick_spec(direction, difficulty, duration)
+        data["movement"] = _get_sit_and_kick_spec(direction, difficulty, duration)
     elif name.lower() == "stand and reach":
-        return _get_stand_and_reach_spec(direction, difficulty, duration)
+        data["movement"] = _get_stand_and_reach_spec(direction, difficulty, duration)
+
+    if cognative:
+        data["audio"] = _get_cognative_active()
+    else:
+        data["audio"] = _get_cognative_null()
+
 
 # ---------------- #
 # Helper Functions #
 # ---------------- #
+
 
 def _get_sit_and_reach_spec(direction: str, difficulty: str, duration: float):
     if difficulty == "easy":
@@ -93,6 +110,7 @@ def _get_sit_and_kick_spec(direction: str, difficulty: str, duration: float):
         ],
     }
 
+
 def _get_stand_and_reach_spec(direction: str, difficulty: str, duration: float):
     if difficulty == "easy":
         x = 0.2175  # m
@@ -118,3 +136,11 @@ def _get_stand_and_reach_spec(direction: str, difficulty: str, duration: float):
             }
         ],
     }
+
+
+def _get_cognative_null():
+    return {"active": False, "category": None, "unique": False}
+
+
+def _get_cognative_active():
+    return {"active": True, "category": "colors", "unique": True}
