@@ -25,7 +25,7 @@ def get_exercise_directions() -> List[str]:
 
 
 def get_exercise_specification(
-    name: str, direction: str, difficulty: str, duration: float, cognative: bool
+    name: str, direction: str, difficulty: str, duration: float, cognitive: bool
 ):
     assert name in get_exercise_list()
     assert direction in get_exercise_directions()
@@ -36,7 +36,7 @@ def get_exercise_specification(
         "direction": direction,
         "difficulty": difficulty,
         "duration": duration,
-        "cognative": cognative,
+        "cognitive": cognitive,
     }
 
     if name.lower() == "sit and reach":
@@ -46,10 +46,10 @@ def get_exercise_specification(
     elif name.lower() == "stand and reach":
         data["movement"] = _get_stand_and_reach_spec(direction, difficulty, duration)
 
-    if cognative:
-        data["audio"] = _get_cognative_active()
+    if cognitive:
+        data["audio"] = _get_cognitive_active()
     else:
-        data["audio"] = _get_cognative_null()
+        data["audio"] = _get_cognitive_null()
 
     return data
 
@@ -140,9 +140,9 @@ def _get_stand_and_reach_spec(direction: str, difficulty: str, duration: float):
     }
 
 
-def _get_cognative_null():
+def _get_cognitive_null():
     return {"active": False, "category": None, "unique": False}
 
 
-def _get_cognative_active():
+def _get_cognitive_active():
     return {"active": True, "category": "colors", "unique": True}
