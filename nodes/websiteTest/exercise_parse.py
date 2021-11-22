@@ -73,8 +73,8 @@ def addNewEx():
     exlab = tk.Label(window, text="Exercise", bg="#E0EEC6", font='helvetica 16')
     exlab.pack()
     variable = tk.StringVar(window)
-    variable.set("Sit and Reach") # default value
-    window.menu = tk.OptionMenu(window, variable,"Sit and Reach", "Seated Kick", "Exercise 3")
+    variable.set("Sit and Reach (Left)") # default value
+    window.menu = tk.OptionMenu(window, variable, "Sit and Reach (Left)", "Sit and Reach (Right)", "Seated Kick (Left)", "Seated Kick (Right)", "Stand and Reach (Left)", "Stand and Reach (Right)")
     window.menu.pack()
     window.menu.config(highlightbackground='#FFFFFF', bg='#FFFFFF', font='helvetica 16')
     menuEntries.append(variable)
@@ -104,7 +104,7 @@ def delete_entries():
     for field in textEntries:
         field.delete(0,END)
     for field in menuEntries:
-        field.set("Sit and Reach")
+        field.set("Sit and Reach (Left)")
     
 
     
@@ -123,8 +123,8 @@ title.pack()
 exlab = tk.Label(window, text="Exercise", bg="#E0EEC6", font='helvetica 16')
 exlab.pack()
 variable = tk.StringVar(window)
-variable.set("Sit and Reach") # default value
-window.menu = tk.OptionMenu(window, variable, "Sit and Reach", "Seated Kick", "Exercise 3")
+variable.set("Sit and Reach (Left)") # default value
+window.menu = tk.OptionMenu(window, variable, "Sit and Reach (Left)", "Sit and Reach (Right)", "Seated Kick (Left)", "Seated Kick (Right)", "Stand and Reach (Left)", "Stand and Reach (Right)")
 window.menu.pack()
 window.menu.config(highlightbackground='#FFFFFF', bg='#FFFFFF', font='helvetica 16')
 menuEntries.append(variable)
