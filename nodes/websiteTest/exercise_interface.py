@@ -51,6 +51,8 @@ def get_exercise_specification(
     else:
         data["audio"] = _get_cognative_null()
 
+    return data
+
 
 # ---------------- #
 # Helper Functions #
