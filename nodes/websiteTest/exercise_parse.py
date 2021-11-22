@@ -1,6 +1,7 @@
 import json
 import tkinter as tk
 from tkinter import *
+from exercise_interface import get_exercise_specification
 ###############################################################
 #File I/O
 def readFile(fileName):
@@ -26,8 +27,11 @@ window['background'] = '#E0EEC6'
 #window.myscrollbar.pack(side="right",fill="y")
 
 #Storage Dict
-textEntries = []
-menuEntries = []
+durEntries = []
+nameEntries = []
+dirEntries = []
+diffEntries = []
+cognEntries = []
 class_data = {
     "exercises": []
     
@@ -41,15 +45,13 @@ def createRoutine():
     
     original_exercises = class_data["exercises"]
 
-    for i in range(len(textEntries)):
-        print(menuEntries)
-        print(textEntries)
+    for i in range(len(durEntries)):
+        #print(nameEntries)
+        #print(durEntries)
         #create new ex  
-        print(i, " :",menuEntries[i], " ",menuEntries[i].get())
-        new_exercise = {}
-        new_exercise["name"] = menuEntries[i].get()
-        new_exercise["duration"] = textEntries[i].get()
-        new_exercise["actions"] = ["spin"]
+        #print(i, " :",nameEntries[i], " ",nameEntries[i].get())
+        new_exercise = get_exercise_specification(nameEntries[i].get(), dirEntries[i].get(), diffEntries[i].get(), durEntries[i].get(), cognEntries[i].get())
+        
         #add ex to routine
         print(new_exercise)
         original_exercises.append(new_exercise)
@@ -73,12 +75,12 @@ def addNewEx():
     exlab = tk.Label(window, text="Exercise", bg="#E0EEC6", font='helvetica 16')
     exlab.pack()
     variable = tk.StringVar(window)
-    variable.set("Sit and Reach (Left)") # default value
-    window.menu = tk.OptionMenu(window, variable, "Sit and Reach (Left)", "Sit and Reach (Right)", "Seated Kick (Left)", "Seated Kick (Right)", "Stand and Reach (Left)", "Stand and Reach (Right)")
+    variable.set("Sit and Reach") # default value
+    window.menu = tk.OptionMenu(window, variable, "Sit and Reach", "Sit and Kick", "Stand and Reach")
     window.menu.pack()
     window.menu.config(highlightbackground='#FFFFFF', bg='#FFFFFF', font='helvetica 16')
-    menuEntries.append(variable)
-    print(menuEntries)
+    nameEntries.append(variable)
+    print(nameEntries)
 
 
     durlab = tk.Label(window, text="Duration (s)", bg="#E0EEC6", font='helvetica 16')
@@ -86,25 +88,25 @@ def addNewEx():
     window.txt = tk.Entry(window, width=10)
     window.txt.pack()
     window.txt.config(highlightbackground='#E0EEC6', relief="solid", borderwidth=1, font='helvetica 16')
-    textEntries.append(window.txt)
-    print(textEntries)
+    durEntries.append(window.txt)
+    print(durEntries)
     
 def remove_exercises():
     #not less than 1 entry
-    if len(textEntries) > 1:
-        del textEntries[-1]
-        del menuEntries[-1]
+    if len(durEntries) > 1:
+        del durEntries[-1]
+        del nameEntries[-1]
         packList = window.pack_slaves()
         print(packList)
         for x in range(1,5):
             packList[len(packList)-x].pack_forget()
-            print(packList[len(textEntries)-x])
+            print(packList[len(durEntries)-x])
         print(packList)
 def delete_entries():
-    for field in textEntries:
+    for field in durEntries:
         field.delete(0,END)
-    for field in menuEntries:
-        field.set("Sit and Reach (Left)")
+    for field in nameEntries:
+        field.set("Sit and Reach")
     
 
     
@@ -123,12 +125,36 @@ title.pack()
 exlab = tk.Label(window, text="Exercise", bg="#E0EEC6", font='helvetica 16')
 exlab.pack()
 variable = tk.StringVar(window)
-variable.set("Sit and Reach (Left)") # default value
-window.menu = tk.OptionMenu(window, variable, "Sit and Reach (Left)", "Sit and Reach (Right)", "Seated Kick (Left)", "Seated Kick (Right)", "Stand and Reach (Left)", "Stand and Reach (Right)")
+variable.set("Sit and Reach") # default value
+window.menu = tk.OptionMenu(window, variable, "Sit and Reach", "Sit and Kick", "Stand and Reach")
 window.menu.pack()
 window.menu.config(highlightbackground='#FFFFFF', bg='#FFFFFF', font='helvetica 16')
-menuEntries.append(variable)
+nameEntries.append(variable)
 
+#L/R
+lrlab = tk.Label(window, text="Direction", bg="#E0EEC6", font='helvetica 16')
+lrlab.pack()
+lrvar=tk.StringVar(window)
+lrvar.set("L") #default value
+lr1 = tk.Radiobutton(window, text="Left",variable=lrvar, value="L")
+lr1.pack()
+lr2 = tk.Radiobutton(window, text="Right", variable=lrvar, value="R")
+lr2.pack()
+dirEntries.append(lrvar)
+
+#Difficulty
+
+difflab = tk.Label(window, text="Difficulty", bg="#E0EEC6", font='helvetica 16')
+difflab.pack()
+diffvar=tk.StringVar(window)
+diffvar.set("M") #default value
+diff1 = tk.Radiobutton(window, text="Easy", variable=diffvar, value="E", padx=11)
+diff1.pack()
+diff2 = tk.Radiobutton(window, text="Medium", variable=diffvar, value="M")
+diff2.pack()
+diff3 = tk.Radiobutton(window, text="Hard", variable=diffvar, value="H", padx=11)
+diff3.pack()
+diffEntries.append(diffvar)
 
 #Duration
 durlab = tk.Label(window, text="Duration (s)", bg="#E0EEC6", font='helvetica 16')
@@ -136,8 +162,12 @@ durlab.pack()
 window.txt = tk.Entry(window, width=10)
 window.txt.pack()
 window.txt.config(highlightbackground='#E0EEC6', relief="solid", borderwidth=1, font='helvetica 16')
-textEntries.append(window.txt)
+durEntries.append(window.txt)
 
+#Cognitive Exercise Inclusion Checkbox
+cognvar = tk.IntVar()
+bt3 = tk.Checkbutton(window, text="Include Cognitive Exercise in Routine")#,variable=lrvar, value="")
+bt3.pack()
 
  
 window.mainloop()
