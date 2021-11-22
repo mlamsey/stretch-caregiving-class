@@ -82,6 +82,27 @@ def addNewEx():
     nameEntries.append(variable)
     print(nameEntries)
 
+    lrlab = tk.Label(window, text="Direction", bg="#E0EEC6", font='helvetica 16')
+    lrlab.pack()
+    lrvar=tk.StringVar(window)
+    lrvar.set("L") #default value
+    lr1 = tk.Radiobutton(window, text="Left",variable=lrvar, value="L")
+    lr1.pack()
+    lr2 = tk.Radiobutton(window, text="Right", variable=lrvar, value="R")
+    lr2.pack()
+    dirEntries.append(lrvar)
+
+    difflab = tk.Label(window, text="Difficulty", bg="#E0EEC6", font='helvetica 16')
+    difflab.pack()
+    diffvar=tk.StringVar(window)
+    diffvar.set("M") #default value
+    diff1 = tk.Radiobutton(window, text="Easy", variable=diffvar, value="E", padx=11)
+    diff1.pack()
+    diff2 = tk.Radiobutton(window, text="Medium", variable=diffvar, value="M")
+    diff2.pack()
+    diff3 = tk.Radiobutton(window, text="Hard", variable=diffvar, value="H", padx=11)
+    diff3.pack()
+    diffEntries.append(diffvar)
 
     durlab = tk.Label(window, text="Duration (s)", bg="#E0EEC6", font='helvetica 16')
     durlab.pack()
@@ -90,6 +111,11 @@ def addNewEx():
     window.txt.config(highlightbackground='#E0EEC6', relief="solid", borderwidth=1, font='helvetica 16')
     durEntries.append(window.txt)
     print(durEntries)
+
+    cognvar = tk.IntVar()
+    bt3 = tk.Checkbutton(window, text="Include Cognitive Exercise in Routine",variable=cognvar)
+    bt3.pack()
+    cognEntries.append()
     
 def remove_exercises():
     #not less than 1 entry
@@ -166,8 +192,8 @@ durEntries.append(window.txt)
 
 #Cognitive Exercise Inclusion Checkbox
 cognvar = tk.IntVar()
-bt3 = tk.Checkbutton(window, text="Include Cognitive Exercise in Routine")#,variable=lrvar, value="")
+bt3 = tk.Checkbutton(window, text="Include Cognitive Exercise in Routine",variable=cognvar)
 bt3.pack()
-
+cognEntries.append()
  
 window.mainloop()
