@@ -15,7 +15,7 @@ import stretch_funmap.navigate as nv
 from sensor_msgs.msg import JointState
 
 # Messages
-from std_msgs.msg import Bool, String, UInt8
+from std_msgs.msg import Bool, String, UInt8, Int8, Float32
 
 
 class stretch_with_stretch(hm.HelloNode):
@@ -37,6 +37,10 @@ class stretch_with_stretch(hm.HelloNode):
             "/sws_nod_head", UInt8, self.nod_head_callback
         )
 
+        self.unique_color_subscriber = rospy.Subscriber(
+            "/speech/n_unique_colors", Int8, self.unique_colors_callback
+        )
+
         # Publishers
         self.notify_publisher = rospy.Publisher("/sws_notify", Bool, queue_size=1)
         self.sws_ready_publisher = rospy.Publisher("/sws_ready", Bool, queue_size=1)
@@ -48,6 +52,10 @@ class stretch_with_stretch(hm.HelloNode):
         )
         self.sws_stop_exercise_publisher = rospy.Publisher(
             "/sws_stop_exercise", Bool, queue_size=1
+        )
+
+        self.speech_recognition_publisher = rospy.Publisher(
+            "/speech/start_recording", Float32, queue_size=1
         )
 
         # Joint State Inits
@@ -92,6 +100,9 @@ class stretch_with_stretch(hm.HelloNode):
         # Gestures
         self.stretch_gestures = stretch_gestures.StretchGestures(self.move_to_pose)
 
+        # callback data
+        self.n_unique_colors = None
+
     def joint_state_callback(self, joint_states):
         # Update Joint State
         with self.joint_states_lock:
@@ -118,6 +129,9 @@ class stretch_with_stretch(hm.HelloNode):
 
     def nod_head_callback(self, data):
         self.stretch_gestures.nod(data.data)
+
+    def unique_colors_callback(self, data):
+        self.n_unique_colors = data.data
 
     def check_for_wrist_contact(self, publish=False):
         bool_wrist_contact = False
@@ -279,6 +293,10 @@ class stretch_with_stretch(hm.HelloNode):
         # give a couple extra seconds for the startup sound
         delay_time = start_time + extra
         stop_time = delay_time + duration + extra
+
+        # start audio recording
+        self.speech_recognition_publisher.publish(duration + duration)
+
         while not rospy.is_shutdown():
             self.sws_ready_publisher.publish(False)
             self.check_for_wrist_contact(publish=True)

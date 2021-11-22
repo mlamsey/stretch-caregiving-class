@@ -23,7 +23,7 @@ class audio_trigger_test():
         self.n_unique_colors = None
 
         # Config
-        self.recording_time = 30.
+        self.recording_time = 5.
         self.rate = 10
 
     def n_unique_colors_callback(self, data):

@@ -36,6 +36,7 @@
   <node name="stretch_sound" pkg="stretch-caregiving-class" type="stretch_sound.py" output="screen"/>
   <node name="stretch_with_stretch" pkg="stretch-caregiving-class" type="stretch_with_stretch.py" output="screen"/>
   <node name="game_manager" pkg="stretch-caregiving-class" type="game_manager.py" output="screen"/>
+  <node name="color_listener" pkg="stretch-caregiving-class" type="color_listener.py" output="screen"/>
   <!-- -->
 
 </launch>

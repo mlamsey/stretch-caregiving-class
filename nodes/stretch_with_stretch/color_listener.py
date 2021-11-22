@@ -16,6 +16,7 @@ from colors import colors
 
 
 def parse_string_for_unique_colors(text_string):
+    rospy.loginfo("RAW STRING: %s" % text_string)
     words = text_string.split()
     unique_words = list(set(words))
     n_unique_colors = 0
@@ -67,10 +68,10 @@ class color_listener():
             # return self.recognizer.recognize_sphinx(audio_clip)
             return self.recognizer.recognize_google(audio_clip)
         except sr.UnknownValueError:
-            rospy.loginfo("Sphinx could not understand audio")
+            rospy.loginfo("Speech recognizer could not understand audio")
             return None
         except sr.RequestError as e:
-            rospy.loginfo("Sphinx error; {0}".format(e))
+            rospy.loginfo("Speech recognition error; {0}".format(e))
             return None
 
     def main(self):

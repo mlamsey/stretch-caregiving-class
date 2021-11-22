@@ -51,3 +51,6 @@ qtcreator-*
 CATKIN_IGNORE
 
 .DS_Store
+
+# Stuff for project
+gameData/
