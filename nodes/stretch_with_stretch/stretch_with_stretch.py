@@ -61,6 +61,7 @@ class StretchWithStretch(hm.HelloNode):
         self.joint_states_lock = threading.Lock()
         self.joint_states = None
 
+        self.wrist_position = None
         self.lift_position = None
         self.lift_effort = None
 
@@ -70,7 +71,7 @@ class StretchWithStretch(hm.HelloNode):
         self.wrist_yaw = None
         self.wrist_yaw_effort = None
 
-        # contact detection
+        # contact detection thresholds
         self.lift_effort_max = 50  # N?
         self.lift_effort_min = 35  # N?
         self.wrist_extension_max = 10  # N?
@@ -103,11 +104,11 @@ class StretchWithStretch(hm.HelloNode):
         self.wrist_position, _, _ = hm.get_wrist_state(joint_states)
 
         # fmt: off
-        self.wrist_extension_effort = joint_states.effort[
-            joint_states.name.index("wrist_extension")
-        ]
         self.lift_effort = joint_states.effort[
             joint_states.name.index("joint_lift")
+        ]
+        self.wrist_extension_effort = joint_states.effort[
+            joint_states.name.index("wrist_extension")
         ]
         self.wrist_yaw_effort = joint_states.effort[
             joint_states.name.index("joint_wrist_yaw")
@@ -122,25 +123,24 @@ class StretchWithStretch(hm.HelloNode):
 
     def check_for_wrist_contact(self, publish=False):
         bool_wrist_contact = False
-        if self.wrist_yaw_effort is not None:
 
-            # rospy.loginfo("wrist_yaw_effort: {}".format(self.wrist_yaw_effort))
+        if self.wrist_yaw_effort is not None:
             if abs(self.wrist_yaw_effort) > self.wrist_yaw_effort_contact_threshold:
                 bool_wrist_contact = True
 
-            # rospy.loginfo("lift_effort: {}".format(self.lift_effort))
-            # if (
-            #     self.lift_effort < self.lift_effort_min
-            #     or self.lift_effort > self.lift_effort_max
-            # ):
-            #     bool_wrist_contact = True
+        # if self.lift_effort is not None:
+        #     if (
+        #         self.lift_effort < self.lift_effort_min
+        #         or self.lift_effort > self.lift_effort_max
+        #     ):
+        #         bool_wrist_contact = True
 
-            # rospy.loginfo("wrist_extension_effort: {}".format(self.wrist_extension_effort))
-            # if (
-            #     self.wrist_extension_effort < self.wrist_extension_min
-            #     or self.wrist_extension_effort > self.wrist_extension_max
-            # ):
-            #     bool_wrist_contact = True
+        # if self.wrist_extension_effort is not None:
+        #     if (
+        #         self.wrist_extension_effort < self.wrist_extension_min
+        #         or self.wrist_extension_effort > self.wrist_extension_max
+        #     ):
+        #         bool_wrist_contact = True
 
         if publish:
             self.wrist_contact_publisher.publish(bool_wrist_contact)
@@ -212,6 +212,7 @@ class StretchWithStretch(hm.HelloNode):
 
         # move to calibration pose (early)
         self.move_to_pose(self.pre_calibration_pose)
+        rospy.sleep(2)  # give robot time to settle
 
         # wait 10 sec for wrist contact to stabalize (hack)
         stop_wait_time = rospy.Time.now() + rospy.Duration.from_sec(10.0)
@@ -227,6 +228,7 @@ class StretchWithStretch(hm.HelloNode):
     def wait_for_calibration_handshake(self):
         rate = rospy.Rate(self.rate)
 
+        # move to calibration pose
         self.move_to_pose(self.pre_calibration_pose)
         rospy.sleep(2)  # give robot time to settle
 
@@ -234,11 +236,16 @@ class StretchWithStretch(hm.HelloNode):
         rospy.loginfo("Give the robot the ball to start the game!")
         rospy.loginfo("*" * 40)
 
+        count = 0
         while not rospy.is_shutdown():
             self.sws_ready_publisher.publish(False)
             if self.check_for_wrist_contact(publish=False):
                 break
             rate.sleep()
+
+            count += 1
+            if count % self.rate == 0:
+                rospy.loginfo("Waiting for calibration handshake...")
 
         if rospy.is_shutdown():
             return
@@ -347,17 +354,22 @@ class StretchWithStretch(hm.HelloNode):
         )
 
         self.wait_for_initialization()
+        if rospy.is_shutdown():
+            return
 
         self.wait_for_calibration_handshake()
+        if rospy.is_shutdown():
+            return
 
         while not rospy.is_shutdown():
-            # wait for an exercise to be selected
             self.wait_for_exercise_start()
+            if rospy.is_shutdown():
+                return
 
-            # wait for an exercise to be completed
             self.wait_for_exercise_stop()
+            if rospy.is_shutdown():
+                return
 
-            # prepare for next exercise
             self.goto_rest_position()
 
 
