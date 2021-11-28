@@ -1,8 +1,8 @@
 def get_exercise_list():
     return [
-        "Sit and Reach",
-        "Sit and Kick",
-        "Stand and Reach",
+        "sit and reach",
+        "sit and kick",
+        "stand and reach",
     ]
 
 
@@ -22,14 +22,16 @@ def get_exercise_directions():
 
 
 def get_exercise_specification(name, direction, difficulty, duration, cognitive):
-    assert name in get_exercise_list()
-    assert direction in get_exercise_directions()
-    assert difficulty in get_exercise_difficulties()
+    assert any(name.lower() == x.lower() for x in get_exercise_list())
+    assert any(direction.lower() == x.lower() for x in get_exercise_directions())
+    assert any(difficulty.lower() == x.lower() for x in get_exercise_difficulties())
+    assert duration > 0.0
+    assert isinstance(cognitive, bool)
 
     data = {
-        "name": name,
-        "direction": direction,
-        "difficulty": difficulty,
+        "name": name.lower(),
+        "direction": direction.lower(),
+        "difficulty": difficulty.lower(),
         "duration": duration,
         "cognitive": cognitive,
     }
@@ -141,3 +143,24 @@ def _get_cognitive_null():
 
 def _get_cognitive_active():
     return {"active": True, "category": "colors", "unique": True}
+
+
+if __name__ == "__main__":
+    import json
+    import random
+    import sys
+
+    name = random.choice(get_exercise_list())
+    direction = random.choice(get_exercise_directions())
+    difficulty = random.choice(get_exercise_difficulties())
+    duration = random.randint(0, 60)
+    cognitive = bool(random.randint(0, 1))
+
+    spec = get_exercise_specification(
+        name=name,
+        direction=direction,
+        difficulty=difficulty,
+        duration=duration,
+        cognitive=cognitive,
+    )
+    json.dump(spec, sys.stdout, indent=2)
