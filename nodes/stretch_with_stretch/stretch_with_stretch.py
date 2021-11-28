@@ -18,7 +18,7 @@ from sensor_msgs.msg import JointState
 from std_msgs.msg import Bool, String, UInt8, Int8, Float32
 
 
-class stretch_with_stretch(hm.HelloNode):
+class StretchWithStretch(hm.HelloNode):
     def __init__(self):
         hm.HelloNode.__init__(self)
         self.move_base = nv.MoveBase(self)
@@ -368,6 +368,5 @@ class stretch_with_stretch(hm.HelloNode):
 
 
 if __name__ == "__main__":
-    rospy.loginfo("stretch_with_stretch::__init__()")
-    node = stretch_with_stretch()
+    node = StretchWithStretch()
     node.main()

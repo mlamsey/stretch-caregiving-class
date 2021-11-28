@@ -1,5 +1,7 @@
 def get_exercise_list():
     return [
+        "home",
+        "rest",
         "sit and reach",
         "sit and kick",
         "stand and reach",
@@ -28,15 +30,21 @@ def get_exercise_specification(name, direction, difficulty, duration, cognitive)
     assert duration > 0.0
     assert isinstance(cognitive, bool)
 
-    data = {
-        "name": name.lower(),
+    data = {"name": name.lower()}
+    data["settings"] = {
         "direction": direction.lower(),
         "difficulty": difficulty.lower(),
         "duration": duration,
         "cognitive": cognitive,
     }
 
-    if name.lower() == "sit and reach":
+    if name.lower() == "home":
+        del data["settings"]
+        data["movement"] = _get_home_spec()
+    elif name.lower() == "rest":
+        del data["settings"]
+        data["movement"] = _get_rest_spec(duration)
+    elif name.lower() == "sit and reach":
         data["movement"] = _get_sit_and_reach_spec(direction, difficulty, duration)
     elif name.lower() == "sit and kick":
         data["movement"] = _get_sit_and_kick_spec(direction, difficulty, duration)
@@ -54,6 +62,32 @@ def get_exercise_specification(name, direction, difficulty, duration, cognitive)
 # ---------------- #
 # Helper Functions #
 # ---------------- #
+
+
+def _get_home_spec():
+    return {
+        "position": {"x": 0.0, "y": 0.0, "a": 0.0},
+        "poses": [
+            {
+                "start": {"arm_height": 0.5, "arm_extension": 0.05, "wrist_yaw": 0.0},
+                "stop": {"arm_height": 0.5, "arm_extension": 0.05, "wrist_yaw": 0.0},
+                "duration": 2,
+            }
+        ],
+    }
+
+
+def _get_rest_spec(duration):
+    return {
+        "position": None,
+        "poses": [
+            {
+                "start": None,
+                "stop": None,
+                "duration": duration,
+            }
+        ],
+    }
 
 
 def _get_sit_and_reach_spec(direction, difficulty, duration):
@@ -150,17 +184,16 @@ if __name__ == "__main__":
     import random
     import sys
 
-    name = random.choice(get_exercise_list())
-    direction = random.choice(get_exercise_directions())
-    difficulty = random.choice(get_exercise_difficulties())
-    duration = random.randint(0, 60)
-    cognitive = bool(random.randint(0, 1))
+    def _get_random_exercise():
+        return get_exercise_specification(
+            name=random.choice(get_exercise_list()),
+            direction=random.choice(get_exercise_directions()),
+            difficulty=random.choice(get_exercise_difficulties()),
+            duration=random.randint(0, 60),
+            cognitive=bool(random.randint(0, 1)),
+        )
 
-    spec = get_exercise_specification(
-        name=name,
-        direction=direction,
-        difficulty=difficulty,
-        duration=duration,
-        cognitive=cognitive,
-    )
-    json.dump(spec, sys.stdout, indent=2)
+    N = random.randint(1, 5)
+    routine = [_get_random_exercise() for _ in range(N)]
+
+    json.dump(routine, sys.stdout, indent=2)
