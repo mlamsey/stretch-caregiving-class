@@ -1,49 +1,48 @@
 #!/usr/bin/env python2
-# Generic Imports
 from __future__ import print_function
 
 import threading
+import numpy as np
 
 # Stretch Imports
 import hello_helpers.hello_misc as hm
-import numpy as np
-import stretch_gestures
+import stretch_funmap.navigate as nv
+import stretch_gestures as sg
 
 # ROS Stuff
 import rospy
-import stretch_funmap.navigate as nv
 from sensor_msgs.msg import JointState
-
-# Messages
 from std_msgs.msg import Bool, String, UInt8, Int8, Float32
 
 
 class StretchWithStretch(hm.HelloNode):
     def __init__(self):
         hm.HelloNode.__init__(self)
+        self.gestures = sg.StretchGestures(self.move_to_pose)
         self.move_base = nv.MoveBase(self)
-
-        # Rate for rospy.Rate() called in main
         self.rate = 20
 
-        # Subscribers
+        # subscribers
+        # fmt: off
         self.joint_states_subscriber = rospy.Subscriber(
             "/stretch/joint_states", JointState, self.joint_state_callback
-        )
-        self.select_exercise_subscriber = rospy.Subscriber(
-            "/sws_select_exercise", String, self.select_exercise_callback
         )
         self.nod_head_subscriber = rospy.Subscriber(
             "/sws_nod_head", UInt8, self.nod_head_callback
         )
-
-        self.unique_color_subscriber = rospy.Subscriber(
-            "/speech/n_unique_colors", Int8, self.unique_colors_callback
+        self.select_exercise_subscriber = rospy.Subscriber(
+            "/sws_select_exercise", String, self.select_exercise_callback
         )
+        # fmt: on
 
-        # Publishers
-        self.notify_publisher = rospy.Publisher("/sws_notify", Bool, queue_size=1)
-        self.sws_ready_publisher = rospy.Publisher("/sws_ready", Bool, queue_size=1)
+        # publishers
+        # fmt: off
+        self.notify_publisher = rospy.Publisher(
+            "/sws_notify", Bool, queue_size=1
+        )
+        self.sws_ready_publisher = rospy.Publisher(
+            "/sws_ready", Bool, queue_size=1
+        )
         self.wrist_contact_publisher = rospy.Publisher(
             "/sws_contact_detected", Bool, queue_size=1
         )
@@ -53,12 +52,13 @@ class StretchWithStretch(hm.HelloNode):
         self.sws_stop_exercise_publisher = rospy.Publisher(
             "/sws_stop_exercise", Bool, queue_size=1
         )
-
         self.speech_recognition_publisher = rospy.Publisher(
             "/speech/start_recording", Float32, queue_size=1
         )
+        # fmt: on
 
-        # Joint State Inits
+        # joint state
+        self.joint_states_lock = threading.Lock()
         self.joint_states = None
 
         self.lift_position = None
@@ -70,20 +70,14 @@ class StretchWithStretch(hm.HelloNode):
         self.wrist_yaw = None
         self.wrist_yaw_effort = None
 
-        # Threading for callbacks
-        self.joint_states_lock = threading.Lock()
-
-        # Internal variables
+        # contact detection
         self.lift_effort_max = 50  # N?
         self.lift_effort_min = 35  # N?
         self.wrist_extension_max = 10  # N?
         self.wrist_extension_min = -10  # N?
         self.wrist_yaw_effort_contact_threshold = 0.35  # N
 
-        # Exercise Init
-        self.current_exercise = None
-
-        # Exercise Configuration
+        # calibration
         self.pre_calibration_pose = {
             "joint_lift": 0.7,  # m
             "wrist_extension": 0.05,  # m
@@ -97,41 +91,34 @@ class StretchWithStretch(hm.HelloNode):
         self.calibration_xya = None
         self.exercise_radius = 0.635  # m (average human arm length)
 
-        # Gestures
-        self.stretch_gestures = stretch_gestures.StretchGestures(self.move_to_pose)
-
-        # callback data
-        self.n_unique_colors = None
+        # exercise state
+        self.current_exercise = None
 
     def joint_state_callback(self, joint_states):
-        # Update Joint State
         with self.joint_states_lock:
             self.joint_states = joint_states
 
-        # Unpack Joint State
-        lift_position, lift_velocity, lift_effort = hm.get_lift_state(joint_states)
-        wrist_position, wrist_velocity, wrist_effort = hm.get_wrist_state(joint_states)
+        # unpack joint state
+        self.lift_position, _, _ = hm.get_lift_state(joint_states)
+        self.wrist_position, _, _ = hm.get_wrist_state(joint_states)
 
+        # fmt: off
         self.wrist_extension_effort = joint_states.effort[
             joint_states.name.index("wrist_extension")
         ]
-        self.lift_effort = joint_states.effort[joint_states.name.index("joint_lift")]
+        self.lift_effort = joint_states.effort[
+            joint_states.name.index("joint_lift")
+        ]
         self.wrist_yaw_effort = joint_states.effort[
             joint_states.name.index("joint_wrist_yaw")
         ]
-
-        # Store necessary items
-        self.lift_position = lift_position
-        self.wrist_position = wrist_position
+        # fmt: on
 
     def select_exercise_callback(self, data):
         self.current_exercise = data.data
 
     def nod_head_callback(self, data):
-        self.stretch_gestures.nod(data.data)
-
-    def unique_colors_callback(self, data):
-        self.n_unique_colors = data.data
+        self.gestures.nod(data.data)
 
     def check_for_wrist_contact(self, publish=False):
         bool_wrist_contact = False
@@ -161,7 +148,8 @@ class StretchWithStretch(hm.HelloNode):
         return bool_wrist_contact
 
     def goto_exercise_position(self):
-        rospy.loginfo("Repositioning for exercise {}...".format(self.current_exercise))
+        rospy.loginfo("Repositioning for exercise {}...".format(
+            self.current_exercise))
 
         current_xya, _ = self.get_robot_floor_pose_xya()
 
@@ -189,14 +177,14 @@ class StretchWithStretch(hm.HelloNode):
             target_a = np.deg2rad(-30.0)
 
         # turn back to calibration angle
-        at_goal = self.move_base.turn(delta_a, publish_visualizations=False)
+        _ = self.move_base.turn(delta_a, publish_visualizations=False)
 
         # move base
-        at_goal = self.move_base.forward(delta_x + target_x, detect_obstacles=False)
+        _ = self.move_base.forward(delta_x + target_x, detect_obstacles=False)
 
         # turn to exercise angle
         if target_a is not None:
-            at_goal = self.move_base.turn(target_a, publish_visualizations=False)
+            _ = self.move_base.turn(target_a, publish_visualizations=False)
 
         # reposition wrist
         wrist_extension = self.post_calibration_pose["wrist_extension"]
@@ -211,25 +199,30 @@ class StretchWithStretch(hm.HelloNode):
         )
 
         rospy.loginfo(
-            "Repositioning for exercise {}... done!".format(self.current_exercise)
+            "Repositioning for exercise {}... done!".format(
+                self.current_exercise)
         )
 
-    def goto_rest_position(self):
-        rospy.loginfo("Returning to rest position...")
+    def wait_for_initialization(self):
+        rate = rospy.Rate(self.rate)
 
-        current_xya, _ = self.get_robot_floor_pose_xya()
+        # wait for joint states to be ready
+        while self.joint_states is None:
+            rate.sleep()
 
-        # get offset from calibration xya
-        delta_a = self.calibration_xya[2] - current_xya[2]
+        # move to calibration pose (early)
+        self.move_to_pose(self.pre_calibration_pose)
 
-        # reposition wrist
-        wrist_extension = self.post_calibration_pose["wrist_extension"]
-        self.move_to_pose({"wrist_extension": wrist_extension}, async=False)
+        # wait 10 sec for wrist contact to stabalize (hack)
+        stop_wait_time = rospy.Time.now() + rospy.Duration.from_sec(10.0)
+        while self.check_for_wrist_contact():
+            rate.sleep()
+            if rospy.Time.now() > stop_wait_time:
+                print("Warning: waited too long :(")
+                break
 
-        # turn back to calibration angle
-        at_goal = self.move_base.turn(delta_a, publish_visualizations=False)
-
-        rospy.loginfo("Returning to rest position... done!")
+        rospy.loginfo("Initialization completed.")
+        self.notify_publisher.publish(True)  # notify
 
     def wait_for_calibration_handshake(self):
         rate = rospy.Rate(self.rate)
@@ -256,8 +249,12 @@ class StretchWithStretch(hm.HelloNode):
         # set x, y, a here in case we move the robot before calibration
         self.calibration_xya, _ = self.get_robot_floor_pose_xya()
 
+        rospy.loginfo("Calibration completed.")
+        self.notify_publisher.publish(True)  # notify
+
     def wait_for_exercise_start(self):
         rate = rospy.Rate(self.rate)
+
         while not rospy.is_shutdown():
             self.sws_ready_publisher.publish(True)
             if self.current_exercise is not None:
@@ -282,11 +279,11 @@ class StretchWithStretch(hm.HelloNode):
         self.sws_start_exercise_publisher.publish(self.current_exercise)
 
     def wait_for_exercise_stop(self):
+        rate = rospy.Rate(self.rate)
+
         # exercise is already over (e.g., exercise C is a "rest")
         if self.current_exercise is None:
             return
-
-        rate = rospy.Rate(self.rate)
 
         extra, duration = 3, 8
         start_time = rospy.Time.now().secs
@@ -324,7 +321,22 @@ class StretchWithStretch(hm.HelloNode):
 
         rospy.sleep(2)  # wait for nod
 
-        self.goto_rest_position()
+    def goto_rest_position(self):
+        rospy.loginfo("Returning to rest position...")
+
+        current_xya, _ = self.get_robot_floor_pose_xya()
+
+        # get offset from calibration xya
+        delta_a = self.calibration_xya[2] - current_xya[2]
+
+        # reposition wrist
+        wrist_extension = self.post_calibration_pose["wrist_extension"]
+        self.move_to_pose({"wrist_extension": wrist_extension}, async=False)
+
+        # turn back to calibration angle
+        _ = self.move_base.turn(delta_a, publish_visualizations=False)
+
+        rospy.loginfo("Returning to rest position... done!")
 
     def main(self):
         hm.HelloNode.main(
@@ -334,30 +346,9 @@ class StretchWithStretch(hm.HelloNode):
             wait_for_first_pointcloud=False,
         )
 
-        rate = rospy.Rate(self.rate)
+        self.wait_for_initialization()
 
-        # wait for initialization to complete
-        while self.joint_states is None:
-            rate.sleep()
-
-        # move to calibration pose (early)
-        self.move_to_pose(self.pre_calibration_pose)
-
-        stop_wait_time = rospy.Time.now() + rospy.Duration.from_sec(10.0)
-        while self.check_for_wrist_contact():
-            rospy.sleep(1)
-            if rospy.Time.now() > stop_wait_time:
-                print("Warning: waited too long :(")
-                break
-
-        rospy.loginfo("Initialization completed.")
-        self.notify_publisher.publish(True)  # notify
-
-        # wait for calibration to complete
         self.wait_for_calibration_handshake()
-
-        rospy.loginfo("Calibration completed.")
-        self.notify_publisher.publish(True)  # notify
 
         while not rospy.is_shutdown():
             # wait for an exercise to be selected
@@ -365,6 +356,9 @@ class StretchWithStretch(hm.HelloNode):
 
             # wait for an exercise to be completed
             self.wait_for_exercise_stop()
+
+            # prepare for next exercise
+            self.goto_rest_position()
 
 
 if __name__ == "__main__":
