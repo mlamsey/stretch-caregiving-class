@@ -368,5 +368,4 @@ class StretchWithStretch(hm.HelloNode):
 
 
 if __name__ == "__main__":
-    node = StretchWithStretch()
-    node.main()
+    StretchWithStretch().main()
