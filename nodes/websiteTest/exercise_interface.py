@@ -1,7 +1,4 @@
-from typing import Any, List
-
-
-def get_exercise_list() -> List[str]:
+def get_exercise_list():
     return [
         "Sit and Reach",
         "Sit and Kick",
@@ -9,7 +6,7 @@ def get_exercise_list() -> List[str]:
     ]
 
 
-def get_exercise_difficulties() -> List[str]:
+def get_exercise_difficulties():
     return [
         "easy",
         "medium",
@@ -17,16 +14,14 @@ def get_exercise_difficulties() -> List[str]:
     ]
 
 
-def get_exercise_directions() -> List[str]:
+def get_exercise_directions():
     return [
         "left",
         "right",
     ]
 
 
-def get_exercise_specification(
-    name: str, direction: str, difficulty: str, duration: float, cognitive: bool
-):
+def get_exercise_specification(name, direction, difficulty, duration, cognitive):
     assert name in get_exercise_list()
     assert direction in get_exercise_directions()
     assert difficulty in get_exercise_difficulties()
@@ -59,7 +54,7 @@ def get_exercise_specification(
 # ---------------- #
 
 
-def _get_sit_and_reach_spec(direction: str, difficulty: str, duration: float):
+def _get_sit_and_reach_spec(direction, difficulty, duration):
     if difficulty == "easy":
         x = 0.2175  # m
     elif difficulty == "medium":
@@ -86,7 +81,7 @@ def _get_sit_and_reach_spec(direction: str, difficulty: str, duration: float):
     }
 
 
-def _get_sit_and_kick_spec(direction: str, difficulty: str, duration: float):
+def _get_sit_and_kick_spec(direction, difficulty, duration):
     if difficulty == "easy":
         x = 0.2175  # m
     elif difficulty == "medium":
@@ -113,7 +108,7 @@ def _get_sit_and_kick_spec(direction: str, difficulty: str, duration: float):
     }
 
 
-def _get_stand_and_reach_spec(direction: str, difficulty: str, duration: float):
+def _get_stand_and_reach_spec(direction, difficulty, duration):
     if difficulty == "easy":
         x = 0.2175  # m
     elif difficulty == "medium":
