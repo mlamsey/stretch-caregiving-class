@@ -3,10 +3,10 @@
   <arg name="debug_directory" value="$(env HELLO_FLEET_PATH)/debug/"/>
 
   <!-- REALSENSE D435i -->
-  <include file="$(find stretch_core)/launch/d435i_high_resolution.launch"></include>
-  <node name="d435i_configure" pkg="stretch_core" type="d435i_configure" output="screen">
-    <param name="initial_mode" type="string" value="High Accuracy"/>
-  </node>
+  <!-- <include file="$(find stretch_core)/launch/d435i_high_resolution.launch"></include> -->
+  <!-- <node name="d435i_configure" pkg="stretch_core" type="d435i_configure" output="screen"> -->
+    <!-- <param name="initial_mode" type="string" value="High Accuracy"/> -->
+  <!-- </node> -->
   <!-- -->
 
   <!-- STRETCH DRIVER -->
@@ -16,13 +16,13 @@
   <!-- -->
 
   <!-- MAPPING --> <!-- This makes the "map" frame available in tf_listener.lookupTransform() -->
-  <node name="funmap" pkg="stretch_funmap" type="funmap" output="screen" >
-  <param name="debug_directory" type="string" value="$(arg debug_directory)"/>
-  </node>
+  <!-- <node name="funmap" pkg="stretch_funmap" type="funmap" output="screen" > -->
+  <!-- <param name="debug_directory" type="string" value="$(arg debug_directory)"/> -->
+  <!-- </node> -->
   <!-- -->
 
   <!-- ARUCO MARKER DETECTOR -->
-  <include file="$(find stretch_core)/launch/stretch_aruco.launch"></include>
+  <!-- <include file="$(find stretch_core)/launch/stretch_aruco.launch"></include> -->
   <!-- -->
 
   <!-- SOUND PLAY -->
