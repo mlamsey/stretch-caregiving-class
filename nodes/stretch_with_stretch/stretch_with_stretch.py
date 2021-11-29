@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 from __future__ import print_function
 
+import json
 import threading
 import numpy as np
 
@@ -12,7 +13,7 @@ import stretch_gestures as sg
 # ROS Stuff
 import rospy
 from sensor_msgs.msg import JointState
-from std_msgs.msg import Bool, String, UInt8, Int8, Float32
+from std_msgs.msg import Bool, String, UInt8, Float32
 
 
 class StretchWithStretch(hm.HelloNode):
@@ -95,6 +96,10 @@ class StretchWithStretch(hm.HelloNode):
         # exercise state
         self.current_exercise = None
 
+    # --------- #
+    # callbacks #
+    # --------- #
+
     def joint_state_callback(self, joint_states):
         with self.joint_states_lock:
             self.joint_states = joint_states
@@ -115,13 +120,71 @@ class StretchWithStretch(hm.HelloNode):
         ]
         # fmt: on
 
-    def select_exercise_callback(self, data):
-        self.current_exercise = data.data
-
     def nod_head_callback(self, data):
         self.gestures.nod(data.data)
 
-    def check_for_wrist_contact(self, publish=False):
+    def select_exercise_callback(self, data):
+        self.current_exercise = json.dumps(data.data)
+
+    # ------- #
+    # helpers #
+    # ------- #
+
+    @staticmethod
+    def _position_to_xya(pos):
+        return [pos["x"], pos["y"], pos["a"]]
+
+    def _goto_position(self, xya):
+        if xya is None:
+            return
+
+        rospy.loginfo("moving to ({:0.2f}, {:0.2f}, {:0.2f})...".format(*xya))  # debug
+
+        robot_xya, _ = self.get_robot_floor_pose_xya()
+        current_xya = np.array(robot_xya) - np.array(self.calibration_xya)
+        delta_x = xya[0] - current_xya[0]
+        delta_y = xya[1] - current_xya[1]
+
+        rospy.loginfo("delta x: {:0.2f}".format(delta_x))  # debug
+        rospy.loginfo("delta y: {:0.2f}".format(delta_y))  # debug
+
+        # rotate towards the target
+        movement_a = np.arctan2(delta_y, delta_x)
+        delta_a = hm.angle_diff_rad(movement_a, current_xya[2])
+        rospy.loginfo("delta a: {:0.2f}".format(delta_a))  # debug
+        _ = self.move_base.turn(delta_a, publish_visualizations=False)
+
+        # move forward towards the target
+        delta = np.sqrt(np.power(delta_x, 2) + np.power(delta_y, 2))
+        rospy.loginfo("delta: {:0.2f}".format(delta))  # debug
+        _ = self.move_base.forward(delta, detect_obstacles=False)
+
+        # rotate towards the exercise angle
+        delta_a = hm.angle_diff_rad(xya[2], movement_a)
+        rospy.loginfo("delta a: {:0.2f}".format(delta_a))  # debug
+        _ = self.move_base.turn(delta_a, publish_visualizations=False)
+
+        rospy.loginfo(
+            "moving to ({:0.2f}, {:0.2f}, {:0.2f})... done!".format(*xya)
+        )  # debug
+
+    def _change_pose(self, src, dst, step):
+        if src is None:
+            return
+        if dst is None:
+            dst = src
+        h = src["arm_height"] + step * (dst["arm_height"] - src["arm_height"])
+        e = src["arm_extension"] + step * (dst["arm_extension"] - src["arm_extension"])
+        y = src["wrist_yaw"] + step * (dst["wrist_yaw"] - src["wrist_yaw"])
+        self.move_to_pose(
+            {
+                "joint_lift": h,
+                "wrist_extension": e,
+                "joint_wrist_yaw": y,
+            }
+        )
+
+    def _check_for_wrist_contact(self, publish=False):
         bool_wrist_contact = False
 
         if self.wrist_yaw_effort is not None:
@@ -147,105 +210,58 @@ class StretchWithStretch(hm.HelloNode):
 
         return bool_wrist_contact
 
-    def goto_exercise_position(self):
-        rospy.loginfo("Repositioning for exercise {}...".format(
-            self.current_exercise))
-
-        current_xya, _ = self.get_robot_floor_pose_xya()
-
-        # get offsets from calibration xya
-        delta_x = self.calibration_xya[0] - current_xya[0]
-        delta_a = self.calibration_xya[2] - current_xya[2]
-
-        # get lift height
-        joint_lift = 0.8  # m
-        if self.current_exercise == "C":
-            joint_lift = self.post_calibration_pose["joint_lift"]
-
-        # get target position
-        target_x = 0.0
-        if self.current_exercise == "A":  # go to the right
-            target_x = self.exercise_radius / 2
-        elif self.current_exercise == "B":  # go to the left
-            target_x = -1 * self.exercise_radius / 2
-
-        # get target angle
-        target_a = None
-        if self.current_exercise == "A":  # go to the right
-            target_a = np.deg2rad(30.0)
-        elif self.current_exercise == "B":  # go to the left
-            target_a = np.deg2rad(-30.0)
-
-        # turn back to calibration angle
-        _ = self.move_base.turn(delta_a, publish_visualizations=False)
-
-        # move base
-        _ = self.move_base.forward(delta_x + target_x, detect_obstacles=False)
-
-        # turn to exercise angle
-        if target_a is not None:
-            _ = self.move_base.turn(target_a, publish_visualizations=False)
-
-        # reposition wrist
-        wrist_extension = self.post_calibration_pose["wrist_extension"]
-        if self.current_exercise != "C":
-            wrist_extension += 0.5  # exted the arm
-        self.move_to_pose(
-            {
-                "joint_lift": joint_lift,
-                "wrist_extension": wrist_extension,
-            },
-            async=False,
-        )
-
-        rospy.loginfo(
-            "Repositioning for exercise {}... done!".format(
-                self.current_exercise)
-        )
+    # ------ #
+    # states #
+    # ------ #
 
     def wait_for_initialization(self):
-        rate = rospy.Rate(self.rate)
+        # wait 30 sec for joint states to be ready
+        stop_wait_time = rospy.Time.now() + rospy.Duration.from_sec(30.0)
+        while not rospy.shutdown() and self.joint_states is None:
+            self.sws_ready_publisher.publish(False)
+            if rospy.Time.now() > stop_wait_time:
+                break
+            rospy.sleep(1)
 
-        # wait for joint states to be ready
-        while self.joint_states is None:
-            rate.sleep()
+        if rospy.is_shutdown():
+            return
 
-        # move to calibration pose (early)
+        # move to the calibration pose
         self.move_to_pose(self.pre_calibration_pose)
-        rospy.sleep(2)  # give robot time to settle
 
         # wait 10 sec for wrist contact to stabalize (hack)
         stop_wait_time = rospy.Time.now() + rospy.Duration.from_sec(10.0)
-        while self.check_for_wrist_contact():
-            rate.sleep()
+        while not rospy.shutdown() and self._check_for_wrist_contact():
+            self.sws_ready_publisher.publish(False)
             if rospy.Time.now() > stop_wait_time:
-                print("Warning: waited too long :(")
                 break
+            rospy.sleep(1)
 
+        if rospy.is_shutdown():
+            return
+
+        # notify
         rospy.loginfo("Initialization completed.")
-        self.notify_publisher.publish(True)  # notify
+        self.notify_publisher.publish(True)
 
     def wait_for_calibration_handshake(self):
         rate = rospy.Rate(self.rate)
 
+        if rospy.is_shutdown():
+            return
+
         # move to calibration pose
         self.move_to_pose(self.pre_calibration_pose)
-        rospy.sleep(2)  # give robot time to settle
 
         rospy.loginfo("*" * 40)
         rospy.loginfo("Give the robot the ball to start the game!")
         rospy.loginfo("*" * 40)
 
-        count = 0
         while not rospy.is_shutdown():
             self.sws_ready_publisher.publish(False)
-            if self.check_for_wrist_contact(publish=False):
+            if self._check_for_wrist_contact(publish=False):
                 break
             rate.sleep()
-
-            count += 1
-            if count % self.rate == 0:
-                rospy.loginfo("Waiting for calibration handshake...")
 
         if rospy.is_shutdown():
             return
@@ -253,97 +269,88 @@ class StretchWithStretch(hm.HelloNode):
         self.move_to_pose(self.post_calibration_pose)
         rospy.sleep(2)  # give robot time to settle
 
-        # set x, y, a here in case we move the robot before calibration
+        # set x, y, a here in case we moved the robot before calibration
         self.calibration_xya, _ = self.get_robot_floor_pose_xya()
 
+        # notify
         rospy.loginfo("Calibration completed.")
-        self.notify_publisher.publish(True)  # notify
+        self.notify_publisher.publish(True)
 
-    def wait_for_exercise_start(self):
+    def wait_for_exercise(self):
         rate = rospy.Rate(self.rate)
-
         while not rospy.is_shutdown():
             self.sws_ready_publisher.publish(True)
             if self.current_exercise is not None:
                 break
             rate.sleep()
 
-        if rospy.is_shutdown():
-            return
+        self.sws_ready_publisher.publish(False)
 
-        rospy.loginfo("Exercise {} selected".format(self.current_exercise))
-
-        # reposition robot
-        self.goto_exercise_position()
-
-        # exercise C returns the robot to the calbiration xya
-        if self.current_exercise == "C":
-            self.current_exercise = None
-            return
-
-        # start exercise
-        rospy.loginfo("Exercise {} starting...".format(self.current_exercise))
-        self.sws_start_exercise_publisher.publish(self.current_exercise)
-
-    def wait_for_exercise_stop(self):
+    def execute_exercise(self):
         rate = rospy.Rate(self.rate)
 
-        # exercise is already over (e.g., exercise C is a "rest")
-        if self.current_exercise is None:
-            return
+        # extract exercise info
+        name = self.current_exercise["name"]
+        movement = self.current_exercise["movement"]
+        first_pose = movement["poses"][0]["start"]
+        total_duration = sum(item["duration"] for item in movement["poses"])
+        has_cognitive = movement["audio"]["active"]
 
-        extra, duration = 3, 8
-        start_time = rospy.Time.now().secs
-        # give a couple extra seconds for the startup sound
-        delay_time = start_time + extra
-        stop_time = delay_time + duration + extra
-
-        # start audio recording
-        self.speech_recognition_publisher.publish(duration + duration)
-
-        while not rospy.is_shutdown():
-            self.sws_ready_publisher.publish(False)
-            self.check_for_wrist_contact(publish=True)
-
-            now = rospy.Time.now().secs
-            if now > stop_time:
-                break
-            elif now > delay_time:
-                # movement
-                pos = self.wrist_position - 0.01
-                self.move_to_pose({"wrist_extension": pos}, async=True)
-
-            rate.sleep()
-
+        # move to exercise position
+        self._goto_position(self._position_to_xya(movement["position"]))
         if rospy.is_shutdown():
             return
 
-        # stop exercise
+        # move to exercise pose
+        self._change_pose(first_pose, first_pose, 0)
+        if rospy.is_shutdown():
+            return
+
+        # notify
+        rospy.loginfo("Starting exercise {}".format(name))
+        self.sws_ready_publisher.publish(False)
+        self.sws_start_exercise_publisher.publish(name)
+
+        # wait for startup chime
+        stop_time = rospy.Time.now() + rospy.Duration.from_sec(2.0)
+        while not rospy.is_shutdown():
+            if rospy.Time.now() > stop_time:
+                break
+            rate.sleep()
+        if rospy.is_shutdown():
+            return
+
+        # notify speech recognition
+        if has_cognitive:
+            self.speech_recognition_publisher.publish(total_duration)
+
+        # execute exercise
+        for pose in movement["poses"]:
+            duration = pose["duration"]
+            start_time = rospy.Time.now().to_sec()
+            while not rospy.is_shutdown():
+                self.sws_ready_publisher.publish(False)
+                self._check_for_wrist_contact(publish=True)
+                delta = rospy.Time.now().to_sec() - start_time
+                if delta > duration:
+                    break
+                self._change_pose(pose["start"], pose["stop"], delta / duration)
+                rate.sleep()
+
+        # reset
         self.current_exercise = None
 
-        self.notify_publisher.publish(True)  # notify
-
-        rospy.loginfo("Exercise {} complete!".format(self.current_exercise))
+        # notify
+        rospy.loginfo("Stoping exercise {}".format(name))
+        self.sws_ready_publisher.publish(False)
         self.sws_stop_exercise_publisher.publish(True)
 
-        rospy.sleep(2)  # wait for nod
-
-    def goto_rest_position(self):
-        rospy.loginfo("Returning to rest position...")
-
-        current_xya, _ = self.get_robot_floor_pose_xya()
-
-        # get offset from calibration xya
-        delta_a = self.calibration_xya[2] - current_xya[2]
-
-        # reposition wrist
-        wrist_extension = self.post_calibration_pose["wrist_extension"]
-        self.move_to_pose({"wrist_extension": wrist_extension}, async=False)
-
-        # turn back to calibration angle
-        _ = self.move_base.turn(delta_a, publish_visualizations=False)
-
-        rospy.loginfo("Returning to rest position... done!")
+        # wait to announce score
+        stop_time = rospy.Time.now() + rospy.Duration.from_sec(2.0)
+        while not rospy.is_shutdown():
+            if rospy.Time.now() > stop_time:
+                break
+            rate.sleep()
 
     def main(self):
         hm.HelloNode.main(
@@ -352,25 +359,11 @@ class StretchWithStretch(hm.HelloNode):
             "node_namespace",
             wait_for_first_pointcloud=False,
         )
-
         self.wait_for_initialization()
-        if rospy.is_shutdown():
-            return
-
         self.wait_for_calibration_handshake()
-        if rospy.is_shutdown():
-            return
-
         while not rospy.is_shutdown():
-            self.wait_for_exercise_start()
-            if rospy.is_shutdown():
-                return
-
-            self.wait_for_exercise_stop()
-            if rospy.is_shutdown():
-                return
-
-            self.goto_rest_position()
+            self.wait_for_exercise()
+            self.execute_exercise()
 
 
 if __name__ == "__main__":

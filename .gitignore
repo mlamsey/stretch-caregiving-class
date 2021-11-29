@@ -54,3 +54,5 @@ CATKIN_IGNORE
 
 # Stuff for project
 gameData/
+
+.vscode/

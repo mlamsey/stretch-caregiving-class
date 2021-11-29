@@ -14,7 +14,7 @@
   <param name="/stretch_driver/fail_out_of_range_goal" type="bool" value="false"/>
   <include file="$(find stretch_core)/launch/stretch_driver.launch" pass_all_args="true"/>
   <!-- -->
-  
+
   <!-- MAPPING --> <!-- This makes the "map" frame available in tf_listener.lookupTransform() -->
   <node name="funmap" pkg="stretch_funmap" type="funmap" output="screen" >
   <param name="debug_directory" type="string" value="$(arg debug_directory)"/>
@@ -34,9 +34,10 @@
   <!-- MAIN -->
   <!-- <node name="stretch_imu_monitor" pkg="stretch-caregiving-class" type="stretch_imu_monitor.py" output="screen"/> -->
   <node name="stretch_sound" pkg="stretch-caregiving-class" type="stretch_sound.py" output="screen"/>
-  <node name="stretch_with_stretch" pkg="stretch-caregiving-class" type="stretch_with_stretch.py" output="screen"/>
-  <node name="game_manager" pkg="stretch-caregiving-class" type="game_manager.py" output="screen"/>
   <node name="color_listener" pkg="stretch-caregiving-class" type="color_listener.py" output="screen"/>
+  <node name="stretch_with_stretch" pkg="stretch-caregiving-class" type="stretch_with_stretch.py" output="screen"/>
+  <node name="game_launcher" pkg="stretch-caregiving-class" type="game_launcher.py" output="screen"/>
+  <node name="game_manager" pkg="stretch-caregiving-class" type="game_manager.py" output="screen"/>
   <!-- -->
 
 </launch>

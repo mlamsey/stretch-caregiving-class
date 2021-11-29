@@ -1,50 +1,54 @@
 #!/usr/bin/env python2
 from __future__ import print_function
 
-# ROS
+import json
 import rospy
-from menu import get_user_input
-
-# Messages
 from std_msgs.msg import Bool, String
 
 
 class GameLauncher:
-    def __init__(self):
+    def __init__(self, path):
         rospy.init_node("game_starter_node", anonymous=True)
 
-        # Subscribers
         self.sws_ready_subscriber = rospy.Subscriber(
             "/sws_ready", Bool, self.sws_ready_callback
         )
-        self.sws_ready = False
-
-        # Publishers
         self.select_exercise_publisher = rospy.Publisher(
             "/sws_select_exercise", String, queue_size=1
         )
 
+        self.sws_ready = False
+        self.routine = json.load(open(path, "r"))
+
     def sws_ready_callback(self, data):
-        if data.data:
-            self.sws_ready = True
+        self.sws_ready = data.data
 
     def main(self):
-        # wait for stretch with stretch to be ready
+        # wait for stretch with stretch
         while not rospy.is_shutdown():
             if not self.sws_ready:
                 continue
+        if rospy.is_shutdown():
+            return
 
-            selection = get_user_input()
-            if selection is None:
-                break
+        for exercise in self.routine:
+            # parse exercise
+            name = exercise["name"]
+            total_duration = sum(item["duration"] for item in exercise["poses"])
+            exercise_string = json.dumps(exercise)
 
-            rospy.loginfo("Exercise {} is ready to begin.".format(selection))
-            self.select_exercise_publisher.publish(selection)
+            # wait for stretch with stretch
+            while not rospy.is_shutdown():
+                if not self.sws_ready:
+                    continue
+            if rospy.is_shutdown():
+                return
 
-            rospy.sleep(5)  # wait for exercies to end
-            self.sws_ready = False
+            # launch exercise
+            rospy.loginfo("Launching {}".format(name))
+            self.select_exercise_publisher.publish(exercise_string)
+            rospy.sleep(total_duration)
 
 
 if __name__ == "__main__":
-    node = GameLauncher()
-    node.main()
+    GameLauncher("exercise-routine.json").main()
