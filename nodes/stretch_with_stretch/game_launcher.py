@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 from __future__ import print_function
 
+import os
 import json
 import rospy
 from std_msgs.msg import Bool, String
@@ -18,12 +19,19 @@ class GameLauncher:
         )
 
         self.sws_ready = False
-        self.routine = json.load(open(path, "r"))
+        self.routine = None
+        if os.path.exists(path):
+            self.routine = json.load(open(path, "r"))
+        else:
+            rospy.logwarn("Could not load routine from: {}".format(path))
 
     def sws_ready_callback(self, data):
         self.sws_ready = data.data
 
     def main(self):
+        if self.routine is None:
+            return
+
         # wait for stretch with stretch
         while not rospy.is_shutdown():
             if not self.sws_ready:
