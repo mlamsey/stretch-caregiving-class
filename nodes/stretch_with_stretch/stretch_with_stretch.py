@@ -124,7 +124,7 @@ class StretchWithStretch(hm.HelloNode):
         self.gestures.nod(data.data)
 
     def select_exercise_callback(self, data):
-        self.current_exercise = json.dumps(data.data)
+        self.current_exercise = json.loads(data.data)
 
     # ------- #
     # helpers #
@@ -217,7 +217,7 @@ class StretchWithStretch(hm.HelloNode):
     def wait_for_initialization(self):
         # wait 30 sec for joint states to be ready
         stop_wait_time = rospy.Time.now() + rospy.Duration.from_sec(30.0)
-        while not rospy.shutdown() and self.joint_states is None:
+        while not rospy.is_shutdown() and self.joint_states is None:
             self.sws_ready_publisher.publish(False)
             if rospy.Time.now() > stop_wait_time:
                 break
@@ -231,7 +231,7 @@ class StretchWithStretch(hm.HelloNode):
 
         # wait 10 sec for wrist contact to stabalize (hack)
         stop_wait_time = rospy.Time.now() + rospy.Duration.from_sec(10.0)
-        while not rospy.shutdown() and self._check_for_wrist_contact():
+        while not rospy.is_shutdown() and self._check_for_wrist_contact():
             self.sws_ready_publisher.publish(False)
             if rospy.Time.now() > stop_wait_time:
                 break
@@ -287,6 +287,9 @@ class StretchWithStretch(hm.HelloNode):
         self.sws_ready_publisher.publish(False)
 
     def execute_exercise(self):
+        if self.current_exercise is None:
+            return
+
         rate = rospy.Rate(self.rate)
 
         # extract exercise info
@@ -294,7 +297,7 @@ class StretchWithStretch(hm.HelloNode):
         movement = self.current_exercise["movement"]
         first_pose = movement["poses"][0]["start"]
         total_duration = sum(item["duration"] for item in movement["poses"])
-        has_cognitive = movement["audio"]["active"]
+        has_cognitive = self.current_exercise["audio"]["active"]
 
         # move to exercise position
         self._goto_position(self._position_to_xya(movement["position"]))
