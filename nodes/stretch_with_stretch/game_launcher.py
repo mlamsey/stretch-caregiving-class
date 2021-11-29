@@ -18,11 +18,13 @@ class GameLauncher:
             "/sws_select_exercise", String, queue_size=1
         )
 
+        self.rate = 5
         self.sws_ready = False
-        self.routine = None
         if os.path.exists(path):
             self.routine = json.load(open(path, "r"))
+            rospy.loginfo("Exercise routine:\n{}".format(json.dumps(self.routine, indent=2)))
         else:
+            self.routine = None
             rospy.logwarn("Routine file {} not found in {}".format(path, os.getcwd()))
 
     def sws_ready_callback(self, data):
@@ -32,28 +34,32 @@ class GameLauncher:
         if self.routine is None:
             return
 
+        rate = rospy.Rate(self.rate)
+
         # wait for stretch with stretch
         while not rospy.is_shutdown():
-            if not self.sws_ready:
-                continue
+            if self.sws_ready:
+                break
+            rate.sleep()
         if rospy.is_shutdown():
             return
 
         for exercise in self.routine:
             # parse exercise
             name = exercise["name"]
-            total_duration = sum(item["duration"] for item in exercise["poses"])
+            movement = exercise["movement"]
+            total_duration = sum(item["duration"] for item in movement["poses"])
             exercise_string = json.dumps(exercise)
 
             # wait for stretch with stretch
             while not rospy.is_shutdown():
-                if not self.sws_ready:
-                    continue
+                if self.sws_ready:
+                    break
             if rospy.is_shutdown():
                 return
 
             # launch exercise
-            rospy.loginfo("Launching {}".format(name))
+            rospy.loginfo("Launching '{}'".format(name))
             self.select_exercise_publisher.publish(exercise_string)
             rospy.sleep(total_duration)
 
