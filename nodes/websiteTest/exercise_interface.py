@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def get_exercise_list():
     return [
         "home",
@@ -99,7 +102,7 @@ def _get_sit_and_reach_spec(direction, difficulty, duration):
         x = 0.4175  # m
 
     y = 0.0  # m
-    a = 30.0  # degrees
+    a = np.deg2rad(30.0)  # rad
 
     if direction == "left":
         x *= -1
@@ -126,7 +129,7 @@ def _get_sit_and_kick_spec(direction, difficulty, duration):
         x = 0.4175  # m
 
     y = 0.0  # m
-    a = -10.0  # degrees
+    a = np.deg2rad(-10.0)  # rad
 
     if direction == "left":
         x *= -1
@@ -153,7 +156,7 @@ def _get_stand_and_reach_spec(direction, difficulty, duration):
         x = 0.4175  # m
 
     y = 0.0  # m
-    a = 30.0  # degrees
+    a = np.deg2rad(30.0)  # rad
 
     if direction == "left":
         x *= -1
