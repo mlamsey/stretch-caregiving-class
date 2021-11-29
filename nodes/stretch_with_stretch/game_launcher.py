@@ -23,7 +23,7 @@ class GameLauncher:
         if os.path.exists(path):
             self.routine = json.load(open(path, "r"))
         else:
-            rospy.logwarn("Could not load routine from: {}".format(path))
+            rospy.logwarn("Routine file {} not found in {}".format(path, os.getcwd()))
 
     def sws_ready_callback(self, data):
         self.sws_ready = data.data
