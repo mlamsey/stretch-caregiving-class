@@ -50,7 +50,7 @@ def createRoutine():
         #print(durEntries)
         #create new ex  
         #print(i, " :",nameEntries[i], " ",nameEntries[i].get())
-        new_exercise = get_exercise_specification(nameEntries[i].get(), dirEntries[i].get(), diffEntries[i].get(), durEntries[i].get(), cognEntries[i].get())
+        new_exercise = get_exercise_specification(nameEntries[i].get(), dirEntries[i].get(), diffEntries[i].get(), durEntries[i].get(), TRUE)
         
         #add ex to routine
         print(new_exercise)
@@ -194,6 +194,6 @@ durEntries.append(window.txt)
 cognvar = tk.IntVar()
 bt3 = tk.Checkbutton(window, text="Include Cognitive Exercise in Routine",variable=cognvar)
 bt3.pack()
-cognEntries.append()
+#cognEntries.append()
  
 window.mainloop()
