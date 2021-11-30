@@ -50,7 +50,7 @@ def createRoutine():
         #print(durEntries)
         #create new ex  
         #print(i, " :",nameEntries[i], " ",nameEntries[i].get())
-        new_exercise = get_exercise_specification(nameEntries[i].get(), dirEntries[i].get(), diffEntries[i].get(), durEntries[i].get(), TRUE)
+        new_exercise = get_exercise_specification(nameEntries[i].get(), dirEntries[i].get(), diffEntries[i].get(), float(durEntries[i].get()), cognEntries[i].get()==1)
         
         #add ex to routine
         print(new_exercise)
@@ -85,22 +85,22 @@ def addNewEx():
     lrlab = tk.Label(window, text="Direction", bg="#E0EEC6", font='helvetica 16')
     lrlab.pack()
     lrvar=tk.StringVar(window)
-    lrvar.set("L") #default value
-    lr1 = tk.Radiobutton(window, text="Left",variable=lrvar, value="L")
+    lrvar.set("Left") #default value
+    lr1 = tk.Radiobutton(window, text="Left",variable=lrvar, value="Left")
     lr1.pack()
-    lr2 = tk.Radiobutton(window, text="Right", variable=lrvar, value="R")
+    lr2 = tk.Radiobutton(window, text="Right", variable=lrvar, value="Right")
     lr2.pack()
     dirEntries.append(lrvar)
 
     difflab = tk.Label(window, text="Difficulty", bg="#E0EEC6", font='helvetica 16')
     difflab.pack()
     diffvar=tk.StringVar(window)
-    diffvar.set("M") #default value
-    diff1 = tk.Radiobutton(window, text="Easy", variable=diffvar, value="E", padx=11)
+    diffvar.set("Medium") #default value
+    diff1 = tk.Radiobutton(window, text="Easy", variable=diffvar, value="Easy", padx=11)
     diff1.pack()
-    diff2 = tk.Radiobutton(window, text="Medium", variable=diffvar, value="M")
+    diff2 = tk.Radiobutton(window, text="Medium", variable=diffvar, value="Medium")
     diff2.pack()
-    diff3 = tk.Radiobutton(window, text="Hard", variable=diffvar, value="H", padx=11)
+    diff3 = tk.Radiobutton(window, text="Hard", variable=diffvar, value="Hard", padx=11)
     diff3.pack()
     diffEntries.append(diffvar)
 
@@ -115,7 +115,7 @@ def addNewEx():
     cognvar = tk.IntVar()
     bt3 = tk.Checkbutton(window, text="Include Cognitive Exercise in Routine",variable=cognvar)
     bt3.pack()
-    cognEntries.append()
+    cognEntries.append(cognvar)
     
 def remove_exercises():
     #not less than 1 entry
@@ -161,10 +161,10 @@ nameEntries.append(variable)
 lrlab = tk.Label(window, text="Direction", bg="#E0EEC6", font='helvetica 16')
 lrlab.pack()
 lrvar=tk.StringVar(window)
-lrvar.set("L") #default value
-lr1 = tk.Radiobutton(window, text="Left",variable=lrvar, value="L")
+lrvar.set("Left") #default value
+lr1 = tk.Radiobutton(window, text="Left",variable=lrvar, value="Left")
 lr1.pack()
-lr2 = tk.Radiobutton(window, text="Right", variable=lrvar, value="R")
+lr2 = tk.Radiobutton(window, text="Right", variable=lrvar, value="Right")
 lr2.pack()
 dirEntries.append(lrvar)
 
@@ -173,12 +173,12 @@ dirEntries.append(lrvar)
 difflab = tk.Label(window, text="Difficulty", bg="#E0EEC6", font='helvetica 16')
 difflab.pack()
 diffvar=tk.StringVar(window)
-diffvar.set("M") #default value
-diff1 = tk.Radiobutton(window, text="Easy", variable=diffvar, value="E", padx=11)
+diffvar.set("Medium") #default value
+diff1 = tk.Radiobutton(window, text="Easy", variable=diffvar, value="Easy", padx=11)
 diff1.pack()
-diff2 = tk.Radiobutton(window, text="Medium", variable=diffvar, value="M")
+diff2 = tk.Radiobutton(window, text="Medium", variable=diffvar, value="Medium")
 diff2.pack()
-diff3 = tk.Radiobutton(window, text="Hard", variable=diffvar, value="H", padx=11)
+diff3 = tk.Radiobutton(window, text="Hard", variable=diffvar, value="Hard", padx=11)
 diff3.pack()
 diffEntries.append(diffvar)
 
@@ -194,6 +194,6 @@ durEntries.append(window.txt)
 cognvar = tk.IntVar()
 bt3 = tk.Checkbutton(window, text="Include Cognitive Exercise in Routine",variable=cognvar)
 bt3.pack()
-#cognEntries.append()
+cognEntries.append(cognvar)
  
 window.mainloop()
