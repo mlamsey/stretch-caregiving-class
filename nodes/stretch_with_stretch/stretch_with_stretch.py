@@ -291,11 +291,11 @@ class StretchWithStretch(hm.HelloNode):
 
         # extract exercise info
         name = self.current_exercise["name"]
+        has_cognitive = self.current_exercise["audio"]["active"]
         movement = self.current_exercise["movement"]
+        exercise_xya = self._position_to_xya(movement["position"])
         first_pose = movement["poses"][0]["start"]
         total_duration = sum(item["duration"] for item in movement["poses"])
-        has_cognitive = self.current_exercise["audio"]["active"]
-        exercise_xya = self._position_to_xya(movement["position"])
 
         # move to exercise position
         self._goto_position(exercise_xya)
@@ -307,9 +307,6 @@ class StretchWithStretch(hm.HelloNode):
         if rospy.is_shutdown():
             return
 
-        if name == "home":
-            self.current_exercise = None
-            return
 
         # notify
         if name != "rest":

@@ -77,9 +77,9 @@ def _get_home_spec():
         "position": {"x": 0.0, "y": 0.0, "a": 0.0},
         "poses": [
             {
-                "start": {"arm_height": 0.5, "arm_extension": 0.05, "wrist_yaw": 0.0},
-                "stop": {"arm_height": 0.5, "arm_extension": 0.05, "wrist_yaw": 0.0},
-                "duration": 2,
+                "start": {"arm_height": 0.85, "arm_extension": 0.05, "wrist_yaw": 0.0},
+                "stop": {"arm_height": 0.85, "arm_extension": 0.05, "wrist_yaw": 0.0},
+                "duration": 0,
             }
         ],
     }
