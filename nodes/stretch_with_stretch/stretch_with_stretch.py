@@ -81,15 +81,15 @@ class StretchWithStretch(hm.HelloNode):
 
         # calibration
         self.pre_calibration_pose = {
-            "joint_lift": 0.7,  # m
-            "wrist_extension": 0.05,  # m
+            "joint_lift": 0.85,  # m
+            "wrist_extension": 0.25,  # m
             "joint_wrist_yaw": 0.0,  # rad
             "joint_gripper_finger_left": 0.5,
             "joint_head_pan": np.deg2rad(-90.0),  # rad
             "joint_head_tilt": -0.2,  # rad
         }
         self.post_calibration_pose = self.pre_calibration_pose.copy()
-        self.post_calibration_pose["joint_gripper_finger_left"] = 0.05
+        self.post_calibration_pose["joint_gripper_finger_left"] = 0.00
         self.calibration_xya = None
         self.exercise_radius = 0.635  # m (average human arm length)
 
@@ -132,41 +132,38 @@ class StretchWithStretch(hm.HelloNode):
 
     @staticmethod
     def _position_to_xya(pos):
-        return [pos["x"], pos["y"], pos["a"]]
+        if pos is not None:
+            return [pos["x"], pos["y"], pos["a"]]
 
     def _goto_position(self, xya):
         if xya is None:
             return
 
-        rospy.loginfo("moving to ({:0.2f}, {:0.2f}, {:0.2f})...".format(*xya))  # debug
+        rospy.loginfo("moving to ({:0.2f}, {:0.2f}, {:0.2f})...".format(*xya))
 
         robot_xya, _ = self.get_robot_floor_pose_xya()
         current_xya = np.array(robot_xya) - np.array(self.calibration_xya)
-        delta_x = xya[0] - current_xya[0]
-        delta_y = xya[1] - current_xya[1]
 
-        rospy.loginfo("delta x: {:0.2f}".format(delta_x))  # debug
-        rospy.loginfo("delta y: {:0.2f}".format(delta_y))  # debug
+        # undo rotation
+        angle = -1 * current_xya[2]
+        rospy.loginfo("undo rotation: {}".format(angle))
+        _ = self.move_base.turn(angle, publish_visualizations=False)
+        if rospy.is_shutdown():
+            return
 
-        # rotate towards the target
-        movement_a = np.arctan2(delta_y, delta_x)
-        delta_a = hm.angle_diff_rad(movement_a, current_xya[2])
-        rospy.loginfo("delta a: {:0.2f}".format(delta_a))  # debug
-        _ = self.move_base.turn(delta_a, publish_visualizations=False)
-
-        # move forward towards the target
-        delta = np.sqrt(np.power(delta_x, 2) + np.power(delta_y, 2))
-        rospy.loginfo("delta: {:0.2f}".format(delta))  # debug
+        # move base
+        delta = xya[0] - current_xya[0]
+        rospy.loginfo("move base: {}".format(delta))
         _ = self.move_base.forward(delta, detect_obstacles=False)
+        if rospy.is_shutdown():
+            return
 
-        # rotate towards the exercise angle
-        delta_a = hm.angle_diff_rad(xya[2], movement_a)
-        rospy.loginfo("delta a: {:0.2f}".format(delta_a))  # debug
-        _ = self.move_base.turn(delta_a, publish_visualizations=False)
-
-        rospy.loginfo(
-            "moving to ({:0.2f}, {:0.2f}, {:0.2f})... done!".format(*xya)
-        )  # debug
+        # rotate for exercise
+        angle = xya[2]
+        rospy.loginfo("rotate for exercise: {}".format(angle))
+        _ = self.move_base.turn(xya[2], publish_visualizations=False)
+        if rospy.is_shutdown():
+            return
 
     def _change_pose(self, src, dst, step):
         if src is None:
@@ -298,9 +295,10 @@ class StretchWithStretch(hm.HelloNode):
         first_pose = movement["poses"][0]["start"]
         total_duration = sum(item["duration"] for item in movement["poses"])
         has_cognitive = self.current_exercise["audio"]["active"]
+        exercise_xya = self._position_to_xya(movement["position"])
 
         # move to exercise position
-        self._goto_position(self._position_to_xya(movement["position"]))
+        self._goto_position(exercise_xya)
         if rospy.is_shutdown():
             return
 
@@ -309,10 +307,15 @@ class StretchWithStretch(hm.HelloNode):
         if rospy.is_shutdown():
             return
 
+        if name == "home":
+            self.current_exercise = None
+            return
+
         # notify
-        rospy.loginfo("Starting exercise {}".format(name))
-        self.sws_ready_publisher.publish(False)
-        self.sws_start_exercise_publisher.publish(name)
+        if name != "rest":
+            rospy.loginfo("Starting exercise {}".format(name))
+            self.sws_ready_publisher.publish(False)
+            self.sws_start_exercise_publisher.publish(name)
 
         # wait for startup chime
         stop_time = rospy.Time.now() + rospy.Duration.from_sec(2.0)
@@ -344,9 +347,10 @@ class StretchWithStretch(hm.HelloNode):
         self.current_exercise = None
 
         # notify
-        rospy.loginfo("Stoping exercise {}".format(name))
-        self.sws_ready_publisher.publish(False)
-        self.sws_stop_exercise_publisher.publish(True)
+        if name != "rest":
+            rospy.loginfo("Stoping exercise {}".format(name))
+            self.sws_ready_publisher.publish(False)
+            self.sws_stop_exercise_publisher.publish(True)
 
         # wait to announce score
         stop_time = rospy.Time.now() + rospy.Duration.from_sec(2.0)
