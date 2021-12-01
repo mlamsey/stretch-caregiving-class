@@ -17,15 +17,14 @@ def _parse_string_for_unique_colors(text_string):
     rospy.loginfo("RAW STRING: %s" % text_string)
     words = text_string.split()
     unique_words = list(set(words))
-    n_unique_colors = 0
+    unique_colors = []
 
     for word in unique_words:
         if any([word is color_string for color_string in colors]) or any(
                 [color_string in word for color_string in colors]):
-            n_unique_colors += 1
+            unique_colors.append(word)
 
-    rospy.loginfo("%i unique colors identified!" % n_unique_colors)
-    return n_unique_colors
+    return unique_colors
 
 
 class ColorListener():
@@ -64,9 +63,11 @@ class ColorListener():
         with sr.Microphone() as source:
             audio_clip = self.recognizer.record(source, duration=recording_length)
             text_string = self._predict_text(audio_clip)
+            rospy.loginfo("recognized text: {}".format(text_string))
             if text_string is not None:
-                n_unique_colors = _parse_string_for_unique_colors(text_string)
-                self.n_unique_colors_publisher.publish(n_unique_colors)
+                unique_colors = _parse_string_for_unique_colors(text_string)
+                rospy.loginfo("detected colors {}".format(unique_colors))
+                self.n_unique_colors_publisher.publish(len(unique_colors))
 
     def main(self):
         rate = rospy.Rate(self.rate)
