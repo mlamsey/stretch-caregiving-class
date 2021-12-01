@@ -211,7 +211,8 @@ if __name__ == "__main__":
 
     routine = [
         get_exercise_specification("sit and reach", "right", "medium", 5, True),
-        get_exercise_specification("sit and reach", "left", "medium", 5, True),
+        get_exercise_specification("sit and kick", "left", "easy", 5, True),
+        get_exercise_specification("stand and reach", "right", "hard", 5, True),
         get_exercise_specification("home"),
     ]
 
