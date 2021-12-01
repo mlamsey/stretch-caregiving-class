@@ -91,7 +91,6 @@ class StretchWithStretch(hm.HelloNode):
         self.post_calibration_pose = self.pre_calibration_pose.copy()
         self.post_calibration_pose["joint_gripper_finger_left"] = 0.00
         self.calibration_xya = None
-        self.exercise_radius = 0.635  # m (average human arm length)
 
         # exercise state
         self.current_exercise = None
@@ -178,7 +177,8 @@ class StretchWithStretch(hm.HelloNode):
                 "joint_lift": h,
                 "wrist_extension": e,
                 "joint_wrist_yaw": y,
-            }
+            },
+            async=True,
         )
 
     def _check_for_wrist_contact(self, publish=False):
