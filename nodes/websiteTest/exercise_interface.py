@@ -26,14 +26,25 @@ def get_exercise_directions():
     ]
 
 
-def get_exercise_specification(name, direction, difficulty, duration, cognitive):
+def get_exercise_specification(name, direction=None, difficulty=None, duration=None, cognitive=None):
+    # TODO: refactor (this code is a mess)
     assert any(name.lower() == x.lower() for x in get_exercise_list())
+    data = {"name": name.lower()}
+
+    if name.lower() == "home":
+        data["movement"] = _get_home_spec()
+        data["audio"] = _get_cognitive_null()
+        return data
+
+    assert duration > 0.0
+    if name.lower() == "rest":
+        data["movement"] = _get_rest_spec(duration)
+        data["audio"] = _get_cognitive_null()
+        return data
+    
     assert any(direction.lower() == x.lower() for x in get_exercise_directions())
     assert any(difficulty.lower() == x.lower() for x in get_exercise_difficulties())
-    assert duration > 0.0
     assert isinstance(cognitive, bool)
-
-    data = {"name": name.lower()}
     data["settings"] = {
         "direction": direction.lower(),
         "difficulty": difficulty.lower(),
@@ -41,13 +52,7 @@ def get_exercise_specification(name, direction, difficulty, duration, cognitive)
         "cognitive": cognitive,
     }
 
-    if name.lower() == "home":
-        del data["settings"]
-        data["movement"] = _get_home_spec()
-    elif name.lower() == "rest":
-        del data["settings"]
-        data["movement"] = _get_rest_spec(duration)
-    elif name.lower() == "sit and reach":
+    if name.lower() == "sit and reach":
         data["movement"] = _get_sit_and_reach_spec(direction, difficulty, duration)
     elif name.lower() == "sit and kick":
         data["movement"] = _get_sit_and_kick_spec(direction, difficulty, duration)
@@ -122,14 +127,15 @@ def _get_sit_and_reach_spec(direction, difficulty, duration):
 
 def _get_sit_and_kick_spec(direction, difficulty, duration):
     if difficulty == "easy":
-        x = 0.2175  # m
+        h = 0.3  # m
     elif difficulty == "medium":
-        x = 0.3175  # m
+        h = 0.4  # m
     elif difficulty == "hard":
-        x = 0.4175  # m
+        h = 0.5  # m
 
+    x = 0.2  # m
     y = 0.0  # m
-    a = np.deg2rad(-10.0)  # rad
+    a = np.deg2rad(0.0)  # rad
 
     if direction == "left":
         x *= -1
@@ -139,8 +145,8 @@ def _get_sit_and_kick_spec(direction, difficulty, duration):
         "position": {"x": x, "y": y, "a": a},
         "poses": [
             {
-                "start": {"arm_height": 0.4, "arm_extension": 0.05, "wrist_yaw": 0.0},
-                "stop": {"arm_height": 0.4, "arm_extension": 0.05, "wrist_yaw": 0.0},
+                "start": {"arm_height": h, "arm_extension": 0.0, "wrist_yaw": 0.0},
+                "stop": {"arm_height": h + 0.1, "arm_extension": 0.0, "wrist_yaw": 0.0},
                 "duration": duration,
             }
         ],
@@ -166,8 +172,8 @@ def _get_stand_and_reach_spec(direction, difficulty, duration):
         "position": {"x": x, "y": y, "a": a},
         "poses": [
             {
-                "start": {"arm_height": 1.1, "arm_extension": 0.55, "wrist_yaw": 0.0},
-                "stop": {"arm_height": 0.1, "arm_extension": 0.05, "wrist_yaw": 0.0},
+                "start": {"arm_height": 1.0, "arm_extension": 0.55, "wrist_yaw": 0.0},
+                "stop": {"arm_height": 1.0, "arm_extension": 0.05, "wrist_yaw": 0.0},
                 "duration": duration,
             }
         ],
@@ -196,7 +202,14 @@ if __name__ == "__main__":
             cognitive=bool(random.randint(0, 1)),
         )
 
-    N = random.randint(1, 5)
-    routine = [_get_random_exercise() for _ in range(N)]
+    # # random exercise
+    # N = random.randint(1, 5)
+    # routine = [_get_random_exercise() for _ in range(N)]
+
+    routine = [
+        get_exercise_specification("sit and reach", "right", "medium", 5, True),
+        get_exercise_specification("sit and reach", "left", "medium", 5, True),
+        get_exercise_specification("home"),
+    ]
 
     json.dump(routine, sys.stdout, indent=2)
