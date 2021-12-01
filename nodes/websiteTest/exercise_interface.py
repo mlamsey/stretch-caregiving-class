@@ -99,6 +99,7 @@ def _get_rest_spec(duration):
 
 
 def _get_sit_and_reach_spec(direction, difficulty, duration):
+    x=0.2175
     if difficulty == "easy":
         x = 0.2175  # m
     elif difficulty == "medium":
@@ -126,6 +127,7 @@ def _get_sit_and_reach_spec(direction, difficulty, duration):
 
 
 def _get_sit_and_kick_spec(direction, difficulty, duration):
+    x=0.2175
     if difficulty == "easy":
         h = 0.3  # m
     elif difficulty == "medium":
@@ -154,6 +156,7 @@ def _get_sit_and_kick_spec(direction, difficulty, duration):
 
 
 def _get_stand_and_reach_spec(direction, difficulty, duration):
+    x=0.2175
     if difficulty == "easy":
         x = 0.2175  # m
     elif difficulty == "medium":
