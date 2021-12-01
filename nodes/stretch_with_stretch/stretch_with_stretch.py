@@ -307,6 +307,10 @@ class StretchWithStretch(hm.HelloNode):
         if rospy.is_shutdown():
             return
 
+        # exit if moving to the home position
+        if name == "home":
+            self.current_exercise = None
+            return
 
         # notify
         if name != "rest":
