@@ -48,9 +48,6 @@ class GameManager:
         # Logger
         self.logger = GameLogger()
 
-    def reset_score(self):
-        self.score = 0
-
     def point_scored(self):
         rospy.loginfo("Point Scored!")
         self.score += 1
@@ -61,6 +58,7 @@ class GameManager:
 
     def start_exercise_callback(self, data):
         self.current_exercise = data.data
+        self.score = 0
 
     def stop_exercise_callback(self, data):
         self.current_exercise = None
@@ -70,7 +68,7 @@ class GameManager:
             self.nod_head_publisher.publish(5)
         elif self.score > 0:
             self.nod_head_publisher.publish(2)
-        self.reset_score()
+        self.score = 0
 
     def wrist_contact_callback(self, data):
         self.contact_detected = data.data

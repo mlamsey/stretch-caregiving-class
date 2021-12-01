@@ -164,7 +164,7 @@ class StretchWithStretch(hm.HelloNode):
         if rospy.is_shutdown():
             return
 
-    def _change_pose(self, src, dst, step):
+    def _change_pose(self, src, dst, step, async=False):
         if src is None:
             return
         if dst is None:
@@ -178,7 +178,7 @@ class StretchWithStretch(hm.HelloNode):
                 "wrist_extension": e,
                 "joint_wrist_yaw": y,
             },
-            async=True,
+            async=async,
         )
 
     def _check_for_wrist_contact(self, publish=False):
@@ -306,6 +306,9 @@ class StretchWithStretch(hm.HelloNode):
         self._change_pose(first_pose, first_pose, 0)
         if rospy.is_shutdown():
             return
+        
+        # wait ??
+        rospy.sleep(2)
 
         # exit if moving to the home position
         if name == "home":
@@ -341,7 +344,7 @@ class StretchWithStretch(hm.HelloNode):
                 delta = rospy.Time.now().to_sec() - start_time
                 if delta > duration:
                     break
-                self._change_pose(pose["start"], pose["stop"], delta / duration)
+                self._change_pose(pose["start"], pose["stop"], delta / duration, True)
                 rate.sleep()
 
         # reset
