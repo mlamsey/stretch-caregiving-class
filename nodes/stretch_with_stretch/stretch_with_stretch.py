@@ -82,14 +82,14 @@ class StretchWithStretch(hm.HelloNode):
         # calibration
         self.pre_calibration_pose = {
             "joint_lift": 0.85,  # m
-            "wrist_extension": 0.25,  # m
+            "wrist_extension": 0.10,  # m
             "joint_wrist_yaw": 0.0,  # rad
-            "joint_gripper_finger_left": 0.5,
+            "joint_gripper_finger_left": 10.0,
             "joint_head_pan": np.deg2rad(-90.0),  # rad
             "joint_head_tilt": -0.2,  # rad
         }
         self.post_calibration_pose = self.pre_calibration_pose.copy()
-        self.post_calibration_pose["joint_gripper_finger_left"] = 0.00
+        self.post_calibration_pose["joint_gripper_finger_left"] = 0.05
         self.calibration_xya = None
 
         # exercise state
@@ -145,24 +145,27 @@ class StretchWithStretch(hm.HelloNode):
 
         # undo rotation
         angle = -1 * current_xya[2]
-        rospy.loginfo("undo rotation: {}".format(angle))
-        _ = self.move_base.turn(angle, publish_visualizations=False)
-        if rospy.is_shutdown():
-            return
+        if abs(angle) > 1e-3:
+            rospy.loginfo("undo rotation: {}".format(angle))
+            _ = self.move_base.turn(angle, publish_visualizations=False)
+            if rospy.is_shutdown():
+                return
 
         # move base
         delta = xya[0] - current_xya[0]
-        rospy.loginfo("move base: {}".format(delta))
-        _ = self.move_base.forward(delta, detect_obstacles=False)
-        if rospy.is_shutdown():
-            return
+        if abs(delta) > 1e-3:
+            rospy.loginfo("move base: {}".format(delta))
+            _ = self.move_base.forward(delta, detect_obstacles=False)
+            if rospy.is_shutdown():
+                return
 
         # rotate for exercise
         angle = xya[2]
-        rospy.loginfo("rotate for exercise: {}".format(angle))
-        _ = self.move_base.turn(xya[2], publish_visualizations=False)
-        if rospy.is_shutdown():
-            return
+        if abs(angle) > 1e-3:
+            rospy.loginfo("rotate for exercise: {}".format(angle))
+            _ = self.move_base.turn(xya[2], publish_visualizations=False)
+            if rospy.is_shutdown():
+                return
 
     def _change_pose(self, src, dst, step, async=False):
         if src is None:
@@ -223,16 +226,31 @@ class StretchWithStretch(hm.HelloNode):
         if rospy.is_shutdown():
             return
 
-        # move to the calibration pose
-        self.move_to_pose(self.pre_calibration_pose)
-
         # wait 10 sec for wrist contact to stabalize (hack)
+        rospy.loginfo("Wait for wrist contact 1...")
         stop_wait_time = rospy.Time.now() + rospy.Duration.from_sec(10.0)
         while not rospy.is_shutdown() and self._check_for_wrist_contact():
             self.sws_ready_publisher.publish(False)
             if rospy.Time.now() > stop_wait_time:
                 break
             rospy.sleep(1)
+        rospy.loginfo("Wait for wrist contact 1... done!")
+
+        if rospy.is_shutdown():
+            return
+
+        # move to the calibration pose
+        self.move_to_pose(self.pre_calibration_pose)
+
+        # wait 10 sec for wrist contact to stabalize (hack)
+        rospy.loginfo("Wait for wrist contact 2...")
+        stop_wait_time = rospy.Time.now() + rospy.Duration.from_sec(10.0)
+        while not rospy.is_shutdown() and self._check_for_wrist_contact():
+            self.sws_ready_publisher.publish(False)
+            if rospy.Time.now() > stop_wait_time:
+                break
+            rospy.sleep(1)
+        rospy.loginfo("Wait for wrist contact 2... done!")
 
         if rospy.is_shutdown():
             return
@@ -345,7 +363,7 @@ class StretchWithStretch(hm.HelloNode):
                 if delta > duration:
                     break
                 self._change_pose(pose["start"], pose["stop"], delta / duration, True)
-                rate.sleep()
+                rospy.sleep(0.75)
 
         # reset
         self.current_exercise = None
