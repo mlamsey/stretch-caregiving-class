@@ -26,7 +26,9 @@ def get_exercise_directions():
     ]
 
 
-def get_exercise_specification(name, direction=None, difficulty=None, duration=None, cognitive=None):
+def get_exercise_specification(
+    name, direction=None, difficulty=None, duration=None, cognitive=None
+):
     # TODO: refactor (this code is a mess)
     assert any(name.lower() == x.lower() for x in get_exercise_list())
     data = {"name": name.lower()}
@@ -41,7 +43,7 @@ def get_exercise_specification(name, direction=None, difficulty=None, duration=N
         data["movement"] = _get_rest_spec(duration)
         data["audio"] = _get_cognitive_null()
         return data
-    
+
     assert any(direction.lower() == x.lower() for x in get_exercise_directions())
     assert any(difficulty.lower() == x.lower() for x in get_exercise_difficulties())
     assert isinstance(cognitive, bool)
@@ -99,7 +101,7 @@ def _get_rest_spec(duration):
 
 
 def _get_sit_and_reach_spec(direction, difficulty, duration):
-    x=0.2175
+    x = 0.2175
     if difficulty == "easy":
         x = 0.2175  # m
     elif difficulty == "medium":
@@ -127,7 +129,7 @@ def _get_sit_and_reach_spec(direction, difficulty, duration):
 
 
 def _get_sit_and_kick_spec(direction, difficulty, duration):
-    x=0.2175
+    x = 0.2175
     if difficulty == "easy":
         h = 0.3  # m
     elif difficulty == "medium":
@@ -156,7 +158,7 @@ def _get_sit_and_kick_spec(direction, difficulty, duration):
 
 
 def _get_stand_and_reach_spec(direction, difficulty, duration):
-    x=0.2175
+    x = 0.2175
     if difficulty == "easy":
         x = 0.2175  # m
     elif difficulty == "medium":
