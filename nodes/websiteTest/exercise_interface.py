@@ -210,9 +210,12 @@ if __name__ == "__main__":
     # routine = [_get_random_exercise() for _ in range(N)]
 
     routine = [
-        get_exercise_specification("sit and reach", "right", "medium", 5, True),
-        get_exercise_specification("sit and kick", "left", "easy", 5, True),
-        get_exercise_specification("stand and reach", "right", "hard", 5, True),
+        # get_exercise_specification("sit and reach", "right", "medium", 8, True),
+        # get_exercise_specification("sit and reach", "left", "hard", 8, True),
+        # get_exercise_specification("stand and reach", "right", "hard", 8, True),
+        # get_exercise_specification("stand and reach", "left", "medium", 8, True),
+        # get_exercise_specification("sit and kick", "right", "hard", 8, True),
+        # get_exercise_specification("sit and kick", "left", "medium", 8, True),
         get_exercise_specification("home"),
     ]
 
