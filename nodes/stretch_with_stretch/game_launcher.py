@@ -6,6 +6,14 @@ import json
 import rospy
 from std_msgs.msg import Bool, String
 
+import menu
+
+# print cleanup
+gamelauncher_debug = False
+
+def launcher_loginfo(msg):
+    if gamelauncher_debug:
+        rospy.loginfo(msg)
 
 class GameLauncher:
     def __init__(self, path):
@@ -22,7 +30,8 @@ class GameLauncher:
         self.sws_ready = False
         if os.path.exists(path):
             self.routine = json.load(open(path, "r"))
-            rospy.loginfo("Exercise routine:\n{}".format(json.dumps(self.routine, indent=2)))
+            # print(self.routine)
+            launcher_loginfo("Exercise routine:\n{}".format(json.dumps(self.routine, indent=2)))
         else:
             self.routine = None
             rospy.logwarn("Routine file {} not found in {}".format(path, os.getcwd()))
@@ -44,6 +53,24 @@ class GameLauncher:
         if rospy.is_shutdown():
             return
 
+        # insert
+        main_in = menu.get_user_input_with_confirmation("main")
+        if main_in == "M":
+            ex_in = menu.get_user_input_with_confirmation("exercise")
+            if ex_in == "A":
+                routine = json.load(open("/home/hello-robot/catkin_ws/src/stretch-caregiving-class/nodes/websiteTest/test.txt", "r"))
+                ex = routine['exercises']
+                exercise_a = ex[0]
+
+                exercise_a_string = json.dumps(exercise_a)
+                self.select_exercise_publisher.publish(exercise_a_string)
+        elif main_in == "J":
+            rospy.logwarn("J not implemented!")
+        else:
+            return
+
+        return
+
         for exercise in self.routine:
             # parse exercise
             name = exercise["name"]
@@ -59,7 +86,7 @@ class GameLauncher:
                 return
 
             # launch exercise
-            rospy.loginfo("Launching '{}'".format(name))
+            launcher_loginfo("Launching '{}'".format(name))
             self.select_exercise_publisher.publish(exercise_string)
             rospy.sleep(total_duration)
 

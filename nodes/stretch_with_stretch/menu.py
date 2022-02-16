@@ -1,8 +1,19 @@
 import rospy
 
+menus = ["MAIN", "EXERCISE"]
+
+# print main menu
+def print_main_menu():
+    rospy.loginfo(" ")
+    rospy.loginfo("======== Stretch with Stretch MENU ========")
+    rospy.loginfo(" ")
+    rospy.loginfo("Please select an action.")
+    rospy.loginfo("(M) Select Exercise    (J) Load JSON    (Q) Quit")
+    rospy.loginfo(" ")
+
 
 # print exercise selection menu
-def print_menu():
+def print_exercise_menu():
     rospy.loginfo(" ")
     rospy.loginfo("======== EXERCISE SELECTION MENU ========")
     rospy.loginfo(" ")
@@ -12,7 +23,22 @@ def print_menu():
 
 
 # defining menu selection
-def menu_selection(ex_select):
+def main_menu_selection(menu_select):
+    menu_select = menu_select.upper()
+
+    if len(menu_select) > 1:
+        rospy.loginfo("Input too long!")
+        return None
+    
+    if menu_select not in ["M", "J", "Q"]:
+        rospy.loginfo("Selection {} not in menu.".format(menu_select))
+        return None
+
+    rospy.loginfo("{} selected.".format(menu_select))
+    return menu_select
+
+
+def exercise_menu_selection(ex_select):
     ex_select = ex_select.upper()
 
     if len(ex_select) > 1:
@@ -27,15 +53,26 @@ def menu_selection(ex_select):
     return ex_select
 
 
-def get_user_input():
+def get_user_input_with_confirmation(menu_name):
+    menu_name = menu_name.upper()
+    if menu_name not in menus:
+        rospy.loginfo("menu::get_user_input_with_confirmation: invalid menu name.")
+        return None
+
     if rospy.is_shutdown():
         return None
 
     input_confirmed = False
     while not input_confirmed:
-        print_menu()
+        # print menu
+        if menu_name == "MAIN":
+            print_main_menu()
+        elif menu_name == "EXERCISE":
+            print_exercise_menu()
+
+        # get input
         msg = "Please enter a selection.      "
-        user_input = raw_input(msg)
+        user_input = raw_input(msg).upper()
         user_input = user_input.replace(" ", "")
         if user_input.upper() == "Q":
             return None
@@ -47,8 +84,13 @@ def get_user_input():
         if decision.upper() == "Q":
             return None
         elif decision.upper() == "Y":
-            gameChoice = menu_selection(user_input)
-            if gameChoice is not None:
+            choice = None
+            if menu_name == "MAIN":
+                choice = main_menu_selection(user_input)
+            elif menu_name == "EXERCISE":
+                choice = exercise_menu_selection(user_input)
+
+            if choice is not None:
                 input_confirmed = True
 
-    return gameChoice
+    return choice
