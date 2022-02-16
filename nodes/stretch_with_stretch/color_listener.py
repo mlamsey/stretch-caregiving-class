@@ -67,6 +67,11 @@ class ColorListener():
             if text_string is not None:
                 unique_colors = _parse_string_for_unique_colors(text_string)
                 rospy.loginfo("detected colors {}".format(unique_colors))
+                rospy.loginfo("*" * 40)
+                rospy.loginfo("*" * 40)
+                rospy.loginfo("number of colors {}".format(len(unique_colors)))
+                rospy.loginfo("*" * 40)
+                rospy.loginfo("*" * 40)
                 self.n_unique_colors_publisher.publish(len(unique_colors))
 
     def main(self):

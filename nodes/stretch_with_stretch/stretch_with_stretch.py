@@ -77,7 +77,7 @@ class StretchWithStretch(hm.HelloNode):
         self.lift_effort_min = 35  # N?
         self.wrist_extension_max = 10  # N?
         self.wrist_extension_min = -10  # N?
-        self.wrist_yaw_effort_contact_threshold = 0.35  # N
+        self.wrist_yaw_effort_contact_threshold = 0.5  # N
 
         # calibration
         self.pre_calibration_pose = {
@@ -363,7 +363,7 @@ class StretchWithStretch(hm.HelloNode):
                 if delta > duration:
                     break
                 self._change_pose(pose["start"], pose["stop"], delta / duration, True)
-                rospy.sleep(0.75)
+                rate.sleep()
 
         # reset
         self.current_exercise = None

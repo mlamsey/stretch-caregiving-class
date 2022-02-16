@@ -8,6 +8,7 @@ def get_exercise_list():
         "sit and reach",
         "sit and kick",
         "stand and reach",
+        "side stretch",
     ]
 
 
@@ -60,6 +61,8 @@ def get_exercise_specification(
         data["movement"] = _get_sit_and_kick_spec(direction, difficulty, duration)
     elif name.lower() == "stand and reach":
         data["movement"] = _get_stand_and_reach_spec(direction, difficulty, duration)
+    elif name.lower() == "side stretch":
+        data["movement"] = _get_side_stretch_spec(direction, difficulty, duration)
 
     if cognitive:
         data["audio"] = _get_cognitive_active()
@@ -129,7 +132,6 @@ def _get_sit_and_reach_spec(direction, difficulty, duration):
 
 
 def _get_sit_and_kick_spec(direction, difficulty, duration):
-    x = 0.2175
     if difficulty == "easy":
         h = 0.3  # m
     elif difficulty == "medium":
@@ -137,7 +139,7 @@ def _get_sit_and_kick_spec(direction, difficulty, duration):
     elif difficulty == "hard":
         h = 0.5  # m
 
-    x = 0.2  # m
+    x = 0.0  # m
     y = 0.0  # m
     a = np.deg2rad(0.0)  # rad
 
@@ -150,7 +152,7 @@ def _get_sit_and_kick_spec(direction, difficulty, duration):
         "poses": [
             {
                 "start": {"arm_height": h, "arm_extension": 0.0, "wrist_yaw": 0.0},
-                "stop": {"arm_height": h + 0.1, "arm_extension": 0.0, "wrist_yaw": 0.0},
+                "stop": {"arm_height": h, "arm_extension": 0.0, "wrist_yaw": 0.0},
                 "duration": duration,
             }
         ],
@@ -185,6 +187,34 @@ def _get_stand_and_reach_spec(direction, difficulty, duration):
     }
 
 
+def _get_side_stretch_spec(direction, difficulty, duration):
+    x = 0.2175
+    if difficulty == "easy":
+        x = 0.2175  # m
+    elif difficulty == "medium":
+        x = 0.3175  # m
+    elif difficulty == "hard":
+        x = 0.4175  # m
+
+    y = 0.0  # m
+    a = np.deg2rad(30.0)  # rad
+
+    if direction == "left":
+        x *= -1
+        a *= -1
+
+    return {
+        "position": {"x": x, "y": y, "a": a},
+        "poses": [
+            {
+                "start": {"arm_height": 1.0, "arm_extension": 0.55, "wrist_yaw": 0.0},
+                "stop": {"arm_height": 1.0, "arm_extension": 0.55, "wrist_yaw": 0.0},
+                "duration": duration,
+            }
+        ],
+    }
+
+
 def _get_cognitive_null():
     return {"active": False, "category": None, "unique": False}
 
@@ -213,11 +243,16 @@ if __name__ == "__main__":
 
     routine = [
         # get_exercise_specification("sit and reach", "right", "medium", 8, True),
-        # get_exercise_specification("sit and reach", "left", "hard", 8, True),
-        # get_exercise_specification("stand and reach", "right", "hard", 8, True),
+        # get_exercise_specification("sit and reach", "left", "medium", 8, True),
+        # get_exercise_specification("stand and reach", "right", "medium", 8, True),
         # get_exercise_specification("stand and reach", "left", "medium", 8, True),
-        # get_exercise_specification("sit and kick", "right", "hard", 8, True),
-        # get_exercise_specification("sit and kick", "left", "medium", 8, True),
+        # get_exercise_specification("sit and kick", "right", "medium", 10, True),
+        # get_exercise_specification("sit and kick", "left", "medium", 10, True),
+        # get_exercise_specification("sit and kick", "left", "medium", 10, True),
+        # get_exercise_specification("sit and kick", "left", "medium", 10, True),
+        # get_exercise_specification("sit and kick", "left", "medium", 10, True),
+        get_exercise_specification("side stretch", "right", "hard", 10, True),
+        # get_exercise_specification("side stretch", "left", "medium", 10, True),
         get_exercise_specification("home"),
     ]
 
