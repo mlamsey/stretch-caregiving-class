@@ -2,17 +2,19 @@ import json
 import tkinter as tk
 from tkinter import *
 from exercise_interface import get_exercise_specification
+import sys
 ###############################################################
 #File I/O
 def readFile(fileName):
     with open(fileName) as d:
-        data = d.readlines()
-    exerciseList = [json.loads(x) for x in data]
+        json.load(d)
+        # data = d.readlines()
+    # exerciseList = [json.loads(x) for x in data]
     
 
 def writeFile(fileName, exercise_dict):
     with open(fileName, 'w') as json_file:
-        json.dump(exercise_dict, json_file)
+        json.dump(exercise_dict, json_file, indent=2)
 ###############################################################
 #TKinter Window Output
 
@@ -56,12 +58,15 @@ def createRoutine():
         #add ex to routine
         print(new_exercise)
         original_exercises.append(new_exercise)
+    
+    go_home = get_exercise_specification("home")
+    original_exercises.append(go_home)
 
     class_data["exercises"] = original_exercises
 
     #output routine to text File
-    writeFile('test.txt', class_data)
-    readFile('test.txt')
+    writeFile('out.txt', class_data)
+    readFile('out.txt')
 
     #clear fields
     delete_entries()
