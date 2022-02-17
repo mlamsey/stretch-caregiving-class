@@ -1,1 +1,1 @@
-{"exercises": [{"duration": "10", "name": "Sit and Reach (Left)", "actions": ["spin"]}]}
+{"exercises": [{"movement": {"position": {"y": 0.0, "x": 0.0, "a": 0.0}, "poses": [{"duration": 10.0, "start": {"arm_height": 0.4, "wrist_yaw": 0.0, "arm_extension": 0.0}, "stop": {"arm_height": 0.4, "wrist_yaw": 0.0, "arm_extension": 0.0}}]}, "audio": {"active": false, "category": null, "unique": false}, "name": "sit and kick", "settings": {"duration": 10.0, "difficulty": "medium", "direction": "right", "cognitive": false}}]}

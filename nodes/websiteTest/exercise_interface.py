@@ -132,6 +132,7 @@ def _get_sit_and_reach_spec(direction, difficulty, duration):
 
 
 def _get_sit_and_kick_spec(direction, difficulty, duration):
+    difficulty = difficulty.lower()
     if difficulty == "easy":
         h = 0.3  # m
     elif difficulty == "medium":
@@ -255,5 +256,7 @@ if __name__ == "__main__":
         # get_exercise_specification("side stretch", "left", "medium", 10, True),
         get_exercise_specification("home"),
     ]
+
+    routine = json.load(open("/home/hello-robot/catkin_ws/src/stretch-caregiving-class/nodes/websiteTest/test.txt", "r"))
 
     json.dump(routine, sys.stdout, indent=2)

@@ -16,7 +16,8 @@ def writeFile(fileName, exercise_dict):
 ###############################################################
 #TKinter Window Output
 
-window = tk.Tk('Exercise Routine')
+# window = tk.Tk('Exercise Routine')
+window = tk.Tk()
 window.title('Stretch with Stretch: Configure Exercise')
   
 #Styles
