@@ -16,7 +16,7 @@ def launcher_loginfo(msg):
         rospy.loginfo(msg)
 
 class GameLauncher:
-    def __init__(self, path):
+    def __init__(self):
         rospy.init_node("game_starter_node", anonymous=True)
 
         self.sws_ready_subscriber = rospy.Subscriber(
@@ -28,20 +28,13 @@ class GameLauncher:
 
         self.rate = 5
         self.sws_ready = False
-        if os.path.exists(path):
-            self.routine = json.load(open(path, "r"))
-            # print(self.routine)
-            launcher_loginfo("Exercise routine:\n{}".format(json.dumps(self.routine, indent=2)))
-        else:
-            self.routine = None
-            rospy.logwarn("Routine file {} not found in {}".format(path, os.getcwd()))
 
     def sws_ready_callback(self, data):
         self.sws_ready = data.data
 
     def main(self):
-        if self.routine is None:
-            return
+        # if self.routine is None:
+        #     return
 
         rate = rospy.Rate(self.rate)
 
@@ -53,43 +46,39 @@ class GameLauncher:
         if rospy.is_shutdown():
             return
 
-        # insert
-        main_in = menu.get_user_input_with_confirmation("main")
-        if main_in == "M":
-            ex_in = menu.get_user_input_with_confirmation("exercise")
-            if ex_in == "A":
-                routine = json.load(open("/home/hello-robot/catkin_ws/src/stretch-caregiving-class/nodes/websiteTest/test.txt", "r"))
-                ex = routine['exercises']
-                exercise_a = ex[0]
+        # MAIN LOOP!
+        while not rospy.is_shutdown():
+            # query user input
+            main_in = menu.get_user_input_with_confirmation("main")
+            if main_in == "M":
+                ex_in = menu.get_user_input_with_confirmation("exercise")
+                routine = None
+                if ex_in == "A":
+                    routine = json.load(open("/home/hello-robot/catkin_ws/src/stretch-caregiving-class/nodes/stretch_with_stretch/exercises/A_sit_reach_right.txt", "r"))
+                elif ex_in == "B":
+                    routine = json.load(open("/home/hello-robot/catkin_ws/src/stretch-caregiving-class/nodes/stretch_with_stretch/exercises/B_sit_and_kick_right.txt", "r"))
+            
+            # run routine
+            if routine is not None:
+                for exercise in routine["exercises"]:
+                    # parse exercise
+                    name = exercise["name"]
+                    movement = exercise["movement"]
+                    total_duration = sum(item["duration"] for item in movement["poses"])
+                    exercise_string = json.dumps(exercise)
 
-                exercise_a_string = json.dumps(exercise_a)
-                self.select_exercise_publisher.publish(exercise_a_string)
-        elif main_in == "J":
-            rospy.logwarn("J not implemented!")
-        else:
-            return
+                    # wait for stretch with stretch
+                    while not rospy.is_shutdown():
+                        if self.sws_ready:
+                            break
+                    if rospy.is_shutdown():
+                        return
 
-        return
-
-        for exercise in self.routine:
-            # parse exercise
-            name = exercise["name"]
-            movement = exercise["movement"]
-            total_duration = sum(item["duration"] for item in movement["poses"])
-            exercise_string = json.dumps(exercise)
-
-            # wait for stretch with stretch
-            while not rospy.is_shutdown():
-                if self.sws_ready:
-                    break
-            if rospy.is_shutdown():
-                return
-
-            # launch exercise
-            launcher_loginfo("Launching '{}'".format(name))
-            self.select_exercise_publisher.publish(exercise_string)
-            rospy.sleep(total_duration)
+                    # launch exercise
+                    launcher_loginfo("Launching '{}'".format(name))
+                    self.select_exercise_publisher.publish(exercise_string)
+                    rospy.sleep(total_duration)
 
 
 if __name__ == "__main__":
-    GameLauncher("exercise-routine.json").main()
+    GameLauncher().main()

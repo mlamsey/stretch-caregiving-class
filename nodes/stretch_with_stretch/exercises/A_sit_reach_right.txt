@@ -1,0 +1,70 @@
+{
+    "exercises": [
+    {
+        "movement": {
+        "position": {
+            "y": 0.0, 
+            "x": 0.4175, 
+            "a": 0.5235987755982988
+        }, 
+        "poses": [
+            {
+            "duration": 10, 
+            "start": {
+                "arm_height": 1.0, 
+                "wrist_yaw": 0.0, 
+                "arm_extension": 0.55
+            }, 
+            "stop": {
+                "arm_height": 1.0, 
+                "wrist_yaw": 0.0, 
+                "arm_extension": 0.55
+            }
+            }
+        ]
+        }, 
+        "audio": {
+        "active": false, 
+        "category": "colors", 
+        "unique": true
+        }, 
+        "name": "side stretch", 
+        "settings": {
+        "duration": 10, 
+        "difficulty": "hard", 
+        "direction": "right", 
+        "cognitive": true
+        }
+    }, 
+    {
+        "audio": {
+        "active": false, 
+        "category": null, 
+        "unique": false
+        }, 
+        "name": "home", 
+        "movement": {
+        "position": {
+            "y": 0.0, 
+            "x": 0.0, 
+            "a": 0.0
+        }, 
+        "poses": [
+            {
+            "duration": 0, 
+            "start": {
+                "arm_height": 0.85, 
+                "wrist_yaw": 0.0, 
+                "arm_extension": 0.05
+            }, 
+            "stop": {
+                "arm_height": 0.85, 
+                "wrist_yaw": 0.0, 
+                "arm_extension": 0.05
+            }
+            }
+        ]
+        }
+    }
+    ]
+}
