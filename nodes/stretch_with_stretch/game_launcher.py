@@ -48,6 +48,9 @@ class GameLauncher:
 
         # MAIN LOOP!
         while not rospy.is_shutdown():
+            # reset routine
+            routine = None
+
             # query user input
             main_in = menu.get_user_input_with_confirmation("main")
             if main_in == "M":
@@ -57,7 +60,20 @@ class GameLauncher:
                     routine = json.load(open("/home/hello-robot/catkin_ws/src/stretch-caregiving-class/nodes/stretch_with_stretch/exercises/A_sit_reach_right.txt", "r"))
                 elif ex_in == "B":
                     routine = json.load(open("/home/hello-robot/catkin_ws/src/stretch-caregiving-class/nodes/stretch_with_stretch/exercises/B_sit_and_kick_right.txt", "r"))
-            
+                elif ex_in == "C":
+                    routine = json.load(open("/home/hello-robot/catkin_ws/src/stretch-caregiving-class/nodes/stretch_with_stretch/exercises/C_sit_hold_right.txt", "r"))
+            elif main_in == "J":
+                rospy.loginfo("Please enter the absolute path to a JSON exercise file:")
+                path_in = raw_input()
+                if os.path.exists(path_in):
+                    routine = json.load(open(path_in, "r"))
+                else:
+                    rospy.loginfo("Invalid Entry - file does not exist!")
+            elif main_in == "Q":
+                rospy.loginfo("Quitting...")
+                return
+
+
             # run routine
             if routine is not None:
                 for exercise in routine["exercises"]:

@@ -18,7 +18,7 @@ def print_exercise_menu():
     rospy.loginfo("======== EXERCISE SELECTION MENU ========")
     rospy.loginfo(" ")
     rospy.loginfo("Please select an exercise.")
-    rospy.loginfo("(A) Exercise A     (B) Exercise B     (C) Exercise C")
+    rospy.loginfo("(A) Sit-Reach R     (B) Sit-Kick R     (C) Reach-Hold R")
     rospy.loginfo(" ")
 
 
@@ -64,6 +64,9 @@ def get_user_input_with_confirmation(menu_name):
 
     input_confirmed = False
     while not input_confirmed:
+        # init
+        choice = None
+
         # print menu
         if menu_name == "MAIN":
             print_main_menu()
@@ -74,17 +77,13 @@ def get_user_input_with_confirmation(menu_name):
         msg = "Please enter a selection.      "
         user_input = raw_input(msg).upper()
         user_input = user_input.replace(" ", "")
-        if user_input.upper() == "Q":
-            return None
 
         msg = "You have selected {}\n".format(user_input)
         msg += "Is this correct? Press y/Y to proceed.      "
         # decision = raw_input(msg)
         decision = "Y"  # for faster debugging
-        if decision.upper() == "Q":
-            return None
-        elif decision.upper() == "Y":
-            choice = None
+
+        if decision.upper() == "Y":
             if menu_name == "MAIN":
                 choice = main_menu_selection(user_input)
             elif menu_name == "EXERCISE":

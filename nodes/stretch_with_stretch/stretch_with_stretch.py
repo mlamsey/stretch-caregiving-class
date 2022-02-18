@@ -143,6 +143,11 @@ class StretchWithStretch(hm.HelloNode):
         robot_xya, _ = self.get_robot_floor_pose_xya()
         current_xya = np.array(robot_xya) - np.array(self.calibration_xya)
 
+        # withdraw arm
+        self.move_to_pose({"wrist_extension": 0.05})
+        while self.wrist_position > 0.075:
+            rospy.sleep(0.1)
+
         # undo rotation
         angle = -1 * current_xya[2]
         if abs(angle) > 1e-3:
