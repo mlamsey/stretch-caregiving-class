@@ -19,6 +19,7 @@ def print_exercise_menu():
     rospy.loginfo(" ")
     rospy.loginfo("Please select an exercise.")
     rospy.loginfo("(A) Sit-Reach R     (B) Sit-Kick R     (C) Reach-Hold R")
+    rospy.loginfo("(D) Sit-Reach L     (E) Stand-Reach L  (F) Sit-Hold L")
     rospy.loginfo(" ")
 
 
@@ -45,7 +46,7 @@ def exercise_menu_selection(ex_select):
         rospy.loginfo("Input too long!")
         return None
 
-    if ex_select not in ["A", "B", "C"]:
+    if ex_select not in ["A", "B", "C", "D", "E", "F"]:
         rospy.loginfo("Exercise {} is not yet implemented".format(ex_select))
         return None
 

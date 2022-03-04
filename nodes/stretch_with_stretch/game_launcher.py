@@ -62,6 +62,12 @@ class GameLauncher:
                     routine = json.load(open("/home/hello-robot/catkin_ws/src/stretch-caregiving-class/nodes/stretch_with_stretch/exercises/B_sit_and_kick_right.txt", "r"))
                 elif ex_in == "C":
                     routine = json.load(open("/home/hello-robot/catkin_ws/src/stretch-caregiving-class/nodes/stretch_with_stretch/exercises/C_sit_hold_right.txt", "r"))
+                elif ex_in == "D":
+                    routine = json.load(open("/home/hello-robot/catkin_ws/src/stretch-caregiving-class/nodes/stretch_with_stretch/exercises/D_sit_reach_left.txt", "r"))
+                elif ex_in == "E":
+                    routine = json.load(open("/home/hello-robot/catkin_ws/src/stretch-caregiving-class/nodes/stretch_with_stretch/exercises/E_stand_reach_left.txt", "r"))
+                elif ex_in == "F":
+                    routine = json.load(open("/home/hello-robot/catkin_ws/src/stretch-caregiving-class/nodes/stretch_with_stretch/exercises/F_sit_hold_left.txt", "r"))
             elif main_in == "J":
                 rospy.loginfo("Please enter the absolute path to a JSON exercise file:")
                 path_in = raw_input()
