@@ -1,0 +1,70 @@
+{
+  "exercises": [
+    {
+      "movement": {
+        "position": {
+          "y": 0.0, 
+          "x": 0.0, 
+          "a": 0.0
+        }, 
+        "poses": [
+          {
+            "duration": 5.0, 
+            "start": {
+              "arm_height": 0.3, 
+              "wrist_yaw": 0.0, 
+              "arm_extension": 0.0
+            }, 
+            "stop": {
+              "arm_height": 0.3, 
+              "wrist_yaw": 0.0, 
+              "arm_extension": 0.0
+            }
+          }
+        ]
+      }, 
+      "audio": {
+        "active": false, 
+        "category": null, 
+        "unique": false
+      }, 
+      "name": "sit and kick", 
+      "settings": {
+        "duration": 5.0, 
+        "difficulty": "easy", 
+        "direction": "left", 
+        "cognitive": false
+      }
+    }, 
+    {
+      "audio": {
+        "active": false, 
+        "category": null, 
+        "unique": false
+      }, 
+      "name": "home", 
+      "movement": {
+        "position": {
+          "y": 0.0, 
+          "x": 0.0, 
+          "a": 0.0
+        }, 
+        "poses": [
+          {
+            "duration": 0, 
+            "start": {
+              "arm_height": 0.85, 
+              "wrist_yaw": 0.0, 
+              "arm_extension": 0.05
+            }, 
+            "stop": {
+              "arm_height": 0.85, 
+              "wrist_yaw": 0.0, 
+              "arm_extension": 0.05
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
