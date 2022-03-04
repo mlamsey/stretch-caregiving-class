@@ -15,6 +15,7 @@ def readFile(fileName):
 def writeFile(fileName, exercise_dict):
     with open(fileName, 'w') as json_file:
         json.dump(exercise_dict, json_file, indent=2)
+
 ###############################################################
 #TKinter Window Output
 
@@ -25,6 +26,7 @@ window.title('Stretch with Stretch: Configure Exercise')
 #Styles
 window.geometry('300x600')
 window['background'] = '#E0EEC6'
+
 #ADDING A SCROLLBAR
 #window.myscrollbar=tk.Scrollbar(window,orient="vertical")
 #window.myscrollbar.pack(side="right",fill="y")
@@ -44,7 +46,6 @@ class_data = {
 #####################################
 #TKinter Functions
 def createRoutine():
-    
     
     original_exercises = class_data["exercises"]
 
@@ -75,55 +76,80 @@ def createRoutine():
 
 def emptyClassData():
     class_data["exercises"] = []
+
+
+def create_top_menu():
+    #Create Buttons
+    button_add_exercise = tk.Button(window, text="Add New Exercise", highlightbackground="#E0EEC6", command=addNewEx)
+    button_add_exercise.pack()
+    button_submit_routine = tk.Button(window, text="Submit Routine", highlightbackground="#E0EEC6", command=createRoutine)
+    button_submit_routine.pack()
+    button_remove_exercise = tk.Button(window, text="Remove Exercise", highlightbackground="#E0EEC6", command=remove_exercises)
+    button_remove_exercise.pack()
+    
+    ##INITIAL FIELDS##
+    title = tk.Label(window, text="Configure Exercise", bg="#E0EEC6", font=('helvetica bold', 20))
+    title.pack()
     
 
-def addNewEx(): 
-    exlab = tk.Label(window, text="Exercise", bg="#E0EEC6", font='helvetica 16')
-    exlab.pack()
-    variable = tk.StringVar(window)
-    variable.set("Sit and Reach") # default value
-    window.menu = tk.OptionMenu(window, variable, "Sit and Reach", "Sit and Kick", "Stand and Reach")
+def addNewEx(label_bg="#E0EEC6"): 
+    # Label Elements
+    exercise_label = tk.Label(window, text="Exercise", bg=label_bg, font='helvetica 16')
+    exercise_label.pack()
+
+    # Exercise Type Selection Menu
+    exercise_type_selection = tk.StringVar(window)
+    exercise_type_selection.set("Sit and Reach") # default value
+    window.menu = tk.OptionMenu(window, exercise_type_selection, "Sit and Reach", "Sit and Kick", "Stand and Reach")
     window.menu.pack()
     window.menu.config(highlightbackground='#FFFFFF', bg='#FFFFFF', font='helvetica 16')
-    nameEntries.append(variable)
-    print(nameEntries)
+    
+    nameEntries.append(exercise_type_selection)
 
-    lrlab = tk.Label(window, text="Direction", bg="#E0EEC6", font='helvetica 16')
-    lrlab.pack()
-    lrvar=tk.StringVar(window)
-    lrvar.set("Left") #default value
-    lr1 = tk.Radiobutton(window, text="Left",variable=lrvar, value="Left")
-    lr1.pack()
-    lr2 = tk.Radiobutton(window, text="Right", variable=lrvar, value="Right")
-    lr2.pack()
-    dirEntries.append(lrvar)
+    # Left / Right Selector
+    lr_label = tk.Label(window, text="Direction", bg=label_bg, font='helvetica 16')
+    lr_label.pack()
+    lr_selection=tk.StringVar(window)
+    lr_selection.set("Left") #default value
+    button_left = tk.Radiobutton(window, text="Left",variable=lr_selection, value="Left")
+    button_left.pack()
+    button_right = tk.Radiobutton(window, text="Right", variable=lr_selection, value="Right")
+    button_right.pack()
 
-    difflab = tk.Label(window, text="Difficulty", bg="#E0EEC6", font='helvetica 16')
-    difflab.pack()
-    diffvar=tk.StringVar(window)
-    diffvar.set("Medium") #default value
-    diff1 = tk.Radiobutton(window, text="Easy", variable=diffvar, value="Easy", padx=11)
-    diff1.pack()
-    diff2 = tk.Radiobutton(window, text="Medium", variable=diffvar, value="Medium")
-    diff2.pack()
-    diff3 = tk.Radiobutton(window, text="Hard", variable=diffvar, value="Hard", padx=11)
-    diff3.pack()
-    diffEntries.append(diffvar)
+    dirEntries.append(lr_selection)
 
-    durlab = tk.Label(window, text="Duration (s)", bg="#E0EEC6", font='helvetica 16')
-    durlab.pack()
+    # Difficulty Selector
+    difficulty_label = tk.Label(window, text="Difficulty", bg=label_bg, font='helvetica 16')
+    difficulty_label.pack()
+    difficulty_selection = tk.StringVar(window)
+    difficulty_selection.set("Medium") #default value
+    button_easy = tk.Radiobutton(window, text="Easy", variable=difficulty_selection, value="Easy", padx=11)
+    button_easy.pack()
+    button_medium = tk.Radiobutton(window, text="Medium", variable=difficulty_selection, value="Medium")
+    button_medium.pack()
+    button_hard = tk.Radiobutton(window, text="Hard", variable=difficulty_selection, value="Hard", padx=11)
+    button_hard.pack()
+
+    diffEntries.append(difficulty_selection)
+
+    # Duration Selector
+    duration_label = tk.Label(window, text="Duration (s)", bg=label_bg, font='helvetica 16')
+    duration_label.pack()
     window.txt = tk.Entry(window, width=10)
     window.txt.pack()
-    window.txt.config(highlightbackground='#E0EEC6', relief="solid", borderwidth=1, font='helvetica 16')
+    window.txt.config(highlightbackground=label_bg, relief="solid", borderwidth=1, font='helvetica 16')
+    
     durEntries.append(window.txt)
-    print(durEntries)
 
-    cognvar = tk.IntVar()
-    bt3 = tk.Checkbutton(window, text="Include Cognitive Exercise in Routine",variable=cognvar)
-    bt3.pack()
-    cognEntries.append(cognvar)
+    # Cognitive Exercise Toggle
+    cognitive_selection = tk.IntVar()
+    button_cognitive = tk.Checkbutton(window, text="Include Cognitive Exercise in Routine",variable=cognitive_selection)
+    button_cognitive.pack()
+    cognEntries.append(cognitive_selection)
     
 def remove_exercises():
+    # TODO: this is broken
+
     #not less than 1 entry
     if len(durEntries) > 1:
         del durEntries[-1]
@@ -141,65 +167,7 @@ def delete_entries():
         field.set("Sit and Reach")
     
 
-    
-#Create Buttons
-bt0 = tk.Button(window, text="Add New Exercise", highlightbackground="#E0EEC6", command=addNewEx)
-bt0.pack()
-bt1 = tk.Button(window, text="Submit Routine", highlightbackground="#E0EEC6", command=createRoutine)
-bt1.pack()
-bt2 = tk.Button(window, text="Remove Exercise", highlightbackground="#E0EEC6", command=remove_exercises)
-bt2.pack()
-##INITIAL FIELDS##
-title = tk.Label(window, text="Configure Exercise", bg="#E0EEC6", font=('helvetica bold', 20))
-title.pack()
-
-#Exercise
-exlab = tk.Label(window, text="Exercise", bg="#E0EEC6", font='helvetica 16')
-exlab.pack()
-variable = tk.StringVar(window)
-variable.set("Sit and Reach") # default value
-window.menu = tk.OptionMenu(window, variable, "Sit and Reach", "Sit and Kick", "Stand and Reach")
-window.menu.pack()
-window.menu.config(highlightbackground='#FFFFFF', bg='#FFFFFF', font='helvetica 16')
-nameEntries.append(variable)
-
-#L/R
-lrlab = tk.Label(window, text="Direction", bg="#E0EEC6", font='helvetica 16')
-lrlab.pack()
-lrvar=tk.StringVar(window)
-lrvar.set("Left") #default value
-lr1 = tk.Radiobutton(window, text="Left",variable=lrvar, value="Left")
-lr1.pack()
-lr2 = tk.Radiobutton(window, text="Right", variable=lrvar, value="Right")
-lr2.pack()
-dirEntries.append(lrvar)
-
-#Difficulty
-
-difflab = tk.Label(window, text="Difficulty", bg="#E0EEC6", font='helvetica 16')
-difflab.pack()
-diffvar=tk.StringVar(window)
-diffvar.set("Medium") #default value
-diff1 = tk.Radiobutton(window, text="Easy", variable=diffvar, value="Easy", padx=11)
-diff1.pack()
-diff2 = tk.Radiobutton(window, text="Medium", variable=diffvar, value="Medium")
-diff2.pack()
-diff3 = tk.Radiobutton(window, text="Hard", variable=diffvar, value="Hard", padx=11)
-diff3.pack()
-diffEntries.append(diffvar)
-
-#Duration
-durlab = tk.Label(window, text="Duration (s)", bg="#E0EEC6", font='helvetica 16')
-durlab.pack()
-window.txt = tk.Entry(window, width=10)
-window.txt.pack()
-window.txt.config(highlightbackground='#E0EEC6', relief="solid", borderwidth=1, font='helvetica 16')
-durEntries.append(window.txt)
-
-#Cognitive Exercise Inclusion Checkbox
-cognvar = tk.IntVar()
-bt3 = tk.Checkbutton(window, text="Include Cognitive Exercise in Routine",variable=cognvar)
-bt3.pack()
-cognEntries.append(cognvar)
- 
+# Main
+create_top_menu()
+addNewEx()
 window.mainloop()
