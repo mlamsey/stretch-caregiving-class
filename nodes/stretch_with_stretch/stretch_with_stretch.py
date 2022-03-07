@@ -7,7 +7,6 @@ import numpy as np
 
 # Stretch Imports
 import hello_helpers.hello_misc as hm
-import stretch_funmap.navigate as nv
 import stretch_gestures as sg
 
 # ROS Stuff
@@ -20,7 +19,6 @@ class StretchWithStretch(hm.HelloNode):
     def __init__(self):
         hm.HelloNode.__init__(self)
         self.gestures = sg.StretchGestures(self.move_to_pose)
-        self.move_base = nv.MoveBase(self)
         self.rate = 20
 
         # subscribers
@@ -152,7 +150,8 @@ class StretchWithStretch(hm.HelloNode):
         angle = -1 * current_xya[2]
         if abs(angle) > 1e-3:
             rospy.loginfo("undo rotation: {}".format(angle))
-            _ = self.move_base.turn(angle, publish_visualizations=False)
+            self.move_to_pose({"rotate_mobile_base": angle})
+            # _ = self.move_base.turn(angle, publish_visualizations=False)
             if rospy.is_shutdown():
                 return
 
@@ -160,7 +159,8 @@ class StretchWithStretch(hm.HelloNode):
         delta = xya[0] - current_xya[0]
         if abs(delta) > 1e-3:
             rospy.loginfo("move base: {}".format(delta))
-            _ = self.move_base.forward(delta, detect_obstacles=False)
+            self.move_to_pose({"translate_mobile_base": delta})
+            # _ = self.move_base.forward(delta, detect_obstacles=False)
             if rospy.is_shutdown():
                 return
 
@@ -168,7 +168,8 @@ class StretchWithStretch(hm.HelloNode):
         angle = xya[2]
         if abs(angle) > 1e-3:
             rospy.loginfo("rotate for exercise: {}".format(angle))
-            _ = self.move_base.turn(xya[2], publish_visualizations=False)
+            self.move_to_pose({"rotate_mobile_base": xya[2]})
+            # _ = self.move_base.turn(xya[2], publish_visualizations=False)
             if rospy.is_shutdown():
                 return
 
