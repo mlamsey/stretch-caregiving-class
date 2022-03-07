@@ -42,7 +42,6 @@ class_data = {
     
 }
 
-
 #####################################
 #TKinter Functions
 def createRoutine():
@@ -68,8 +67,17 @@ def createRoutine():
     class_data["exercises"] = original_exercises
 
     #output routine to text File
-    writeFile('out.txt', class_data)
-    readFile('out.txt')
+    output_path = window.output_path.get()
+
+    if output_path == "":
+        output_path = "out.txt"
+    
+    if output_path[-4:] != ".txt":
+        output_path += ".txt"
+
+    print("Writing file to " + output_path)
+    writeFile(output_path, class_data)
+    readFile(output_path)
 
     #clear fields
     delete_entries()
@@ -88,6 +96,13 @@ def create_top_menu():
     button_submit_routine.pack()
     button_remove_exercise = tk.Button(window, text="Remove Exercise", highlightbackground="#E0EEC6", command=remove_exercises)
     button_remove_exercise.pack()
+
+    # Create file name
+    path_label = tk.Label(window, text="Output File Path:", bg="#E0EEC6", font='helvetica 16')
+    path_label.pack()
+    window.output_path = tk.Entry(window, width=20)
+    window.output_path.pack()
+    window.output_path.config(highlightbackground="#E0EEC6", relief="solid", borderwidth=1, font='helvetica 16')
     
     ##INITIAL FIELDS##
     title = tk.Label(window, text="Configure Exercise", bg="#E0EEC6", font=('helvetica bold', 20))
