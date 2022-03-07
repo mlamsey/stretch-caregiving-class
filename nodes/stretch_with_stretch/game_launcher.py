@@ -29,6 +29,9 @@ class GameLauncher:
         self.rate = 5
         self.sws_ready = False
 
+        # internal
+        self.exercise_dir = "/home/hello-robot/catkin_ws/src/stretch-caregiving-class/nodes/stretch_with_stretch/exercises/"
+
     def sws_ready_callback(self, data):
         self.sws_ready = data.data
 
@@ -55,19 +58,32 @@ class GameLauncher:
             main_in = menu.get_user_input_with_confirmation("main")
             if main_in == "M":
                 ex_in = menu.get_user_input_with_confirmation("exercise")
-                routine = None
+                path = None
+
+                # parse user selection
                 if ex_in == "A":
-                    routine = json.load(open("/home/hello-robot/catkin_ws/src/stretch-caregiving-class/nodes/stretch_with_stretch/exercises/A_sit_reach_right.txt", "r"))
+                    path = self.exercise_dir + "A_sit_reach_right.txt"
                 elif ex_in == "B":
-                    routine = json.load(open("/home/hello-robot/catkin_ws/src/stretch-caregiving-class/nodes/stretch_with_stretch/exercises/B_sit_and_kick_right.txt", "r"))
+                    path = self.exercise_dir + "B_sit_and_kick_right.txt"
                 elif ex_in == "C":
-                    routine = json.load(open("/home/hello-robot/catkin_ws/src/stretch-caregiving-class/nodes/stretch_with_stretch/exercises/C_sit_hold_right.txt", "r"))
+                    path = self.exercise_dir + "C_sit_hold_right.txt"
                 elif ex_in == "D":
-                    routine = json.load(open("/home/hello-robot/catkin_ws/src/stretch-caregiving-class/nodes/stretch_with_stretch/exercises/D_sit_reach_left.txt", "r"))
+                    path = self.exercise_dir + "D_sit_reach_left.txt"
                 elif ex_in == "E":
-                    routine = json.load(open("/home/hello-robot/catkin_ws/src/stretch-caregiving-class/nodes/stretch_with_stretch/exercises/E_stand_reach_left.txt", "r"))
+                    path = self.exercise_dir + "E_stand_reach_left.txt"
                 elif ex_in == "F":
-                    routine = json.load(open("/home/hello-robot/catkin_ws/src/stretch-caregiving-class/nodes/stretch_with_stretch/exercises/F_sit_hold_left.txt", "r"))
+                    path = self.exercise_dir + "F_sit_hold_left.txt"
+                
+                # load routine
+                if path is not None:
+                    try:
+                        exercise_file = open(path, "r")
+                        routine = json.load(exercise_file)
+                    except IOError:
+                        rospy.logerr("File path does not exist: " + path)
+                    except json.JSONDecodeError:
+                        rospy.logerr("File contains invalid json: " + path)
+
             elif main_in == "J":
                 rospy.loginfo("Please enter the absolute path to a JSON exercise file:")
                 path_in = raw_input()
