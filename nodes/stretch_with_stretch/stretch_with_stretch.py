@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 import json
+import queue
 import threading
 import numpy as np
 
@@ -53,6 +54,9 @@ class StretchWithStretch(hm.HelloNode):
         )
         self.speech_recognition_publisher = rospy.Publisher(
             "/speech/start_recording", Float32, queue_size=1
+        )
+        self.say_publisher = rospy.Publisher(
+            "/sws_say", String, queue_size=1
         )
         # fmt: on
 
@@ -277,6 +281,9 @@ class StretchWithStretch(hm.HelloNode):
         rospy.loginfo("*" * 40)
         rospy.loginfo("Give the robot the ball to start the game!")
         rospy.loginfo("*" * 40)
+        
+        # phrase
+        self.say_publisher.publish("please hand me the target")
 
         while not rospy.is_shutdown():
             self.sws_ready_publisher.publish(False)
@@ -296,6 +303,8 @@ class StretchWithStretch(hm.HelloNode):
         # notify
         rospy.loginfo("Calibration completed.")
         self.notify_publisher.publish(True)
+        # rospy.sleep(1.)
+        # self.say_publisher.publish("thank you")
 
     def wait_for_exercise(self):
         rate = rospy.Rate(self.rate)

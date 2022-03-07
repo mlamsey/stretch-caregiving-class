@@ -25,6 +25,9 @@ class GameLauncher:
         self.select_exercise_publisher = rospy.Publisher(
             "/sws_select_exercise", String, queue_size=1
         )
+        self.say_publisher = rospy.Publisher(
+            "/sws_say", String, queue_size=1
+        )
 
         self.rate = 5
         self.sws_ready = False
@@ -93,6 +96,7 @@ class GameLauncher:
                     rospy.loginfo("Invalid Entry - file does not exist!")
             elif main_in == "Q":
                 rospy.loginfo("Quitting...")
+                self.say_publisher.publish("thanks for playing")
                 return
 
 

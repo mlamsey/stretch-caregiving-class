@@ -8,6 +8,12 @@ from sound_play.libsoundplay import SoundClient
 from std_msgs.msg import Bool, String, UInt8
 
 
+def clean_string(string):
+    string = string.lower()
+    string.replace(" ", "-")
+    return string
+
+
 class StretchSound:
     def __init__(self):
         rospy.init_node("stretch_sound", anonymous=True)
@@ -24,6 +30,9 @@ class StretchSound:
         self.announce_score_subscriber = rospy.Subscriber(
             "/sws_announce_score", UInt8, self.announce_score, queue_size=1
         )
+        self.say_subscriber = rospy.Subscriber(
+            "/sws_say", String, self.say, queue_size=1
+        )
 
         self.base_sound_path = os.path.join(
             os.path.expanduser("~"),
@@ -35,6 +44,12 @@ class StretchSound:
 
         self.handle = SoundClient()
         self.allow_time = rospy.Time.now()
+
+        rendered_phrases = []
+        for (_, _, filenames) in os.walk(os.path.join(self.base_sound_path, "tts", "v2")):
+            rendered_phrases.extend(filenames)
+            break
+        self.rendered_phrases = rendered_phrases
 
     def set_allow_time(self, delay):
         self.allow_time = rospy.Time.now() + rospy.Duration.from_sec(delay)
@@ -53,8 +68,16 @@ class StretchSound:
         self.handle.playWave(path, blocking=True)
 
     def start_exercise(self, data):
-        path = os.path.join(self.base_sound_path, "3-2-1-go_75bpm.wav")
-        self.handle.playWave(path, blocking=False)
+        # path = os.path.join(self.base_sound_path, "3-2-1-go_75bpm.wav")
+        phrases = ["ready", "set", "go"]
+        for phrase in phrases:
+            file_name = phrase + ".wav"
+            path = os.path.join(self.base_sound_path, "tts", "v2", file_name)
+            if path is not None:
+                self.handle.playWave(path, blocking=False)
+                rospy.sleep(1.)
+            else:
+                rospy.logerr("stretch_sound::start_exercise: bad strings!")
         self.set_allow_time(2.0)
 
     def point_scored(self, data):
@@ -76,6 +99,16 @@ class StretchSound:
         if os.path.exists(path):
             self.handle.playWave(path, blocking=True)
 
+    def say(self, data):
+        file_name = "{}.wav".format(data.data)
+        file_name = clean_string(file_name)
+        if file_name in self.rendered_phrases:
+            path = os.path.join(self.base_sound_path, "tts", "v2", file_name)
+            if path is not None:
+                # print(file_name)
+                self.handle.playWave(path, blocking=False)
+            else:
+                rospy.logerr("stretch_sound::say: bad string!")
 
     def main(self):
         rospy.spin()

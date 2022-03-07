@@ -49,6 +49,9 @@ class Speak():
         self.generate_phrase("set")
         self.generate_phrase("go")
         self.generate_phrase("thanks for playing!")
+        self.generate_phrase("nice job")
+        self.generate_phrase("new high score")
+
 
     def generate_phrase(self, phrase):
         phrase = filter_string_chars(phrase)
