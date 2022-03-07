@@ -50,11 +50,13 @@ def createRoutine():
     original_exercises = class_data["exercises"]
 
     for i in range(len(durEntries)):
-        #print(nameEntries)
-        #print(durEntries)
+        # print(nameEntries[i].get())
+        # print(durEntries[i].get())
         #create new ex  
         #print(i, " :",nameEntries[i], " ",nameEntries[i].get())
-        new_exercise = get_exercise_specification(nameEntries[i].get(), dirEntries[i].get(), diffEntries[i].get(), float(durEntries[i].get()), cognEntries[i].get()==1)
+        new_exercise = get_exercise_specification(
+            name=nameEntries[i].get(), direction=dirEntries[i].get(), difficulty=diffEntries[i].get(), duration=float(durEntries[i].get()), cognitive=cognEntries[i].get()==1
+            )
         
         #add ex to routine
         print(new_exercise)

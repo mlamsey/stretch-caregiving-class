@@ -1,4 +1,5 @@
 import numpy as np
+from numpy import diff
 
 
 def get_exercise_list():
@@ -30,38 +31,46 @@ def get_exercise_directions():
 def get_exercise_specification(
     name, direction=None, difficulty=None, duration=None, cognitive=None
 ):
-    # TODO: refactor (this code is a mess)
-    assert any(name.lower() == x.lower() for x in get_exercise_list())
-    data = {"name": name.lower()}
+    # clean up input
+    name = name.lower()
+    if direction is not None:
+        direction = direction.lower()
+    if difficulty is not None:
+        difficulty = difficulty.lower()
 
-    if name.lower() == "home":
+
+    # TODO: refactor (this code is a mess)
+    assert any(name == x.lower() for x in get_exercise_list())
+    data = {"name": name}
+
+    if name == "home":
         data["movement"] = _get_home_spec()
         data["audio"] = _get_cognitive_null()
         return data
 
     assert duration > 0.0
-    if name.lower() == "rest":
+    if name == "rest":
         data["movement"] = _get_rest_spec(duration)
         data["audio"] = _get_cognitive_null()
         return data
 
-    assert any(direction.lower() == x.lower() for x in get_exercise_directions())
-    assert any(difficulty.lower() == x.lower() for x in get_exercise_difficulties())
+    assert any(direction == x.lower() for x in get_exercise_directions())
+    assert any(difficulty == x.lower() for x in get_exercise_difficulties())
     assert isinstance(cognitive, bool)
     data["settings"] = {
-        "direction": direction.lower(),
-        "difficulty": difficulty.lower(),
+        "direction": direction,
+        "difficulty": difficulty,
         "duration": duration,
         "cognitive": cognitive,
     }
 
-    if name.lower() == "sit and reach":
+    if name == "sit and reach":
         data["movement"] = _get_sit_and_reach_spec(direction, difficulty, duration)
-    elif name.lower() == "sit and kick":
+    elif name == "sit and kick":
         data["movement"] = _get_sit_and_kick_spec(direction, difficulty, duration)
-    elif name.lower() == "stand and reach":
+    elif name == "stand and reach":
         data["movement"] = _get_stand_and_reach_spec(direction, difficulty, duration)
-    elif name.lower() == "side stretch":
+    elif name == "side stretch":
         data["movement"] = _get_side_stretch_spec(direction, difficulty, duration)
 
     if cognitive:
@@ -132,7 +141,7 @@ def _get_sit_and_reach_spec(direction, difficulty, duration):
 
 
 def _get_sit_and_kick_spec(direction, difficulty, duration):
-    difficulty = difficulty.lower()
+    difficulty = difficulty
     if difficulty == "easy":
         h = 0.3  # m
     elif difficulty == "medium":
