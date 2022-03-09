@@ -1,4 +1,5 @@
 import json
+from struct import pack
 import tkinter as tk
 from tkinter import *
 from exercise_interface import get_exercise_specification
@@ -22,6 +23,7 @@ def writeFile(fileName, exercise_dict):
 # window = tk.Tk('Exercise Routine')
 window = tk.Tk()
 window.title('Stretch with Stretch: Configure Exercise')
+window.n_elements_last_added = 0
   
 #Styles
 window.geometry('300x600')
@@ -109,7 +111,10 @@ def create_top_menu():
     title.pack()
     
 
-def addNewEx(label_bg="#E0EEC6"): 
+def addNewEx(label_bg="#E0EEC6"):
+    # get current number of UI elements (used at end)
+    previous_n_elements = len(window.pack_slaves())
+
     # Label Elements
     exercise_label = tk.Label(window, text="Exercise", bg=label_bg, font='helvetica 16')
     exercise_label.pack()
@@ -163,20 +168,26 @@ def addNewEx(label_bg="#E0EEC6"):
     button_cognitive = tk.Checkbutton(window, text="Include Cognitive Exercise in Routine",variable=cognitive_selection)
     button_cognitive.pack()
     cognEntries.append(cognitive_selection)
+
+    # save number of elements added to UI
+    new_n_elements = len(window.pack_slaves())
+    n_elements_added = new_n_elements - previous_n_elements
+    window.n_elements_last_added = n_elements_added
     
 def remove_exercises():
-    # TODO: this is broken
-
-    #not less than 1 entry
     if len(durEntries) > 1:
         del durEntries[-1]
         del nameEntries[-1]
         packList = window.pack_slaves()
-        print(packList)
-        for x in range(1,5):
-            packList[len(packList)-x].pack_forget()
-            print(packList[len(durEntries)-x])
-        print(packList)
+        n_elements = len(packList)
+
+        n_elements_to_remove = window.n_elements_last_added
+
+        if n_elements_to_remove > 0:
+            for x in range(n_elements_to_remove):
+                i = n_elements - x - 1
+                packList[i].pack_forget()
+
 def delete_entries():
     for field in durEntries:
         field.delete(0,END)
