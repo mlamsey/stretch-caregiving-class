@@ -70,12 +70,15 @@ class StretchSound:
     def start_exercise(self, data):
         # path = os.path.join(self.base_sound_path, "3-2-1-go_75bpm.wav")
         phrases = ["ready", "set", "go"]
-        for phrase in phrases:
+        n_words = len(phrases)
+        for i in range(n_words):
+            phrase = phrases[i]
             file_name = phrase + ".wav"
             path = os.path.join(self.base_sound_path, "tts", "v2", file_name)
             if path is not None:
                 self.handle.playWave(path, blocking=False)
-                rospy.sleep(1.)
+                if i < n_words - 1:
+                    rospy.sleep(1.)
             else:
                 rospy.logerr("stretch_sound::start_exercise: bad strings!")
         self.set_allow_time(2.0)
