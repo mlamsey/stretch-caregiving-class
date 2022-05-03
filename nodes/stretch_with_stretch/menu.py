@@ -76,12 +76,12 @@ def get_user_input_with_confirmation(menu_name):
 
         # get input
         msg = "Please enter a selection.      "
-        user_input = raw_input(msg).upper()
+        user_input = input(msg).upper()
         user_input = user_input.replace(" ", "")
 
         msg = "You have selected {}\n".format(user_input)
         msg += "Is this correct? Press y/Y to proceed.      "
-        # decision = raw_input(msg)
+        # decision = input(msg)
         decision = "Y"  # for faster debugging
 
         if decision.upper() == "Y":

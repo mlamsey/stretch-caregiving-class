@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 from __future__ import print_function
 
 import json
@@ -179,7 +179,7 @@ class StretchWithStretch(hm.HelloNode):
             if rospy.is_shutdown():
                 return
 
-    def _change_pose(self, src, dst, step, async=False):
+    def _change_pose(self, src, dst, step, asynch=False):
         if src is None:
             return
         if dst is None:
@@ -193,7 +193,7 @@ class StretchWithStretch(hm.HelloNode):
                 "wrist_extension": e,
                 "joint_wrist_yaw": y,
             },
-            async=async,
+            return_before_done=asynch,
         )
 
     def _check_for_wrist_contact(self, publish=False):

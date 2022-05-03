@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 from __future__ import print_function
 
 import os
@@ -89,7 +89,7 @@ class GameLauncher:
 
             elif main_in == "J":
                 rospy.loginfo("Please enter the absolute path to a JSON exercise file:")
-                path_in = raw_input()
+                path_in = input()
                 if os.path.exists(path_in):
                     routine = json.load(open(path_in, "r"))
                 else:
